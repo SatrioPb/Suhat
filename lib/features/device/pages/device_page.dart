@@ -4,6 +4,7 @@ import '../../../../app/providers.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../health_connect/presentation/controllers/health_controller.dart';
 import '../../health_connect/presentation/widgets/health_status_card.dart';
+import '../../bluetooth/presentation/widgets/smartwatch_ble_card.dart';
 
 class DevicePage extends ConsumerWidget {
   const DevicePage({super.key});
@@ -52,14 +53,14 @@ class DevicePage extends ConsumerWidget {
             onRefresh: () => controller.fetchHealthData(),
           ),
 
-          // 2. Petunjuk Sinkronisasi Smartwatch via Fitbeing
+          // 2. Koneksi Langsung Bluetooth (BLE) Smartwatch Supercalla MG5
+          const SmartwatchBleCard(),
+
+          // 3. Petunjuk Sinkronisasi Smartwatch via Fitbeing
           _buildFitbeingGuideCard(),
 
-          // 3. Pengaturan Target Langkah Harian
+          // 4. Pengaturan Target Langkah Harian
           _buildStepGoalCard(context, ref, currentGoal),
-
-          // 4. Informasi Keterhubungan Bluetooth (Eksplisit & Jujur)
-          _buildBluetoothNoticeCard(),
 
           // 5. Tentang Aplikasi & Privasi
           _buildAboutCard(),
@@ -217,53 +218,6 @@ class DevicePage extends ConsumerWidget {
     );
   }
 
-  Widget _buildBluetoothNoticeCard() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.borderSubtle),
-      ),
-      child: const Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            Icons.bluetooth_disabled,
-            size: 20,
-            color: AppTheme.textMuted,
-          ),
-          SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Status Bluetooth: Tidak Aktif Langsung',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.textDark,
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  'Aplikasi Supercalla Health saat ini mengandalkan Google Health Connect sebagai pusat pertukaran data kesehatan. '
-                  'Koneksi langsung BLE sedang disiapkan untuk tahap implementasi berikutnya setelah verifikasi protokol jam.',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: AppTheme.textMuted,
-                    height: 1.35,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildAboutCard() {
     return Container(
