@@ -156,12 +156,20 @@ void main() {
     expect(find.text('Target Lari Mingguan'), findsOneWidget);
 
     // Scroll to reveal remaining cards in outer ListView
-    await tester.drag(find.byType(ListView).first, const Offset(0, -400));
+    await tester.scrollUntilVisible(
+      find.text('5 Zona Detak Jantung Lari'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('5 Zona Detak Jantung Lari'), findsOneWidget);
 
-    await tester.drag(find.byType(ListView).first, const Offset(0, -400));
+    await tester.scrollUntilVisible(
+      find.text('Pencegahan Cedera & Overtraining'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('Pencegahan Cedera & Overtraining'), findsOneWidget);

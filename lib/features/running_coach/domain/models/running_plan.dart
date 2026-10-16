@@ -99,17 +99,22 @@ class HeartRateZoneRange {
   });
 }
 
-/// 5 Zona denyut jantung lari pribadi (Personalized Heart Rate Running Zones)
+/// 5 Zona denyut jantung lari pribadi berdasarkan metode Karvonen (Heart Rate Reserve - HRR)
+/// Formula: Target HR = (MHR - RHR) * %HRR + RHR
 class PersonalRunningZones {
   final int maxHeartRate;
-  final HeartRateZoneRange zone1; // < 60%
-  final HeartRateZoneRange zone2; // 60% - 70%
-  final HeartRateZoneRange zone3; // 70% - 80%
-  final HeartRateZoneRange zone4; // 80% - 90%
-  final HeartRateZoneRange zone5; // > 90%
+  final int restingHeartRate;
+  final int heartRateReserve;
+  final HeartRateZoneRange zone1; // 50% - 60% HRR + RHR
+  final HeartRateZoneRange zone2; // 60% - 70% HRR + RHR
+  final HeartRateZoneRange zone3; // 70% - 80% HRR + RHR
+  final HeartRateZoneRange zone4; // 80% - 90% HRR + RHR
+  final HeartRateZoneRange zone5; // 90% - 100% HRR + RHR
 
   const PersonalRunningZones({
     required this.maxHeartRate,
+    required this.restingHeartRate,
+    required this.heartRateReserve,
     required this.zone1,
     required this.zone2,
     required this.zone3,
@@ -117,50 +122,86 @@ class PersonalRunningZones {
     required this.zone5,
   });
 
-  factory PersonalRunningZones.fromAge(int age) {
-    final maxHr = 220 - age;
+  /// Menghitung zona lari menggunakan formula Karvonen (Heart Rate Reserve)
+  /// Target HR = (MHR - RHR) * %HRR + RHR
+  factory PersonalRunningZones.fromKarvonen({
+    required int age,
+    int? restingHeartRate,
+    int? maxHeartRate,
+  }) {
+    final mhr = maxHeartRate ?? (220 - age);
+    final rhr = (restingHeartRate != null && restingHeartRate > 35 && restingHeartRate < 120)
+        ? restingHeartRate
+        : 60;
+    final hrr = (mhr - rhr).clamp(30, 180);
+
+    // Hitung batas denyut nadi untuk masing-masing zona sesuai persentase HRR
+    final z1Min = (hrr * 0.50).round() + rhr;
+    final z1Max = (hrr * 0.60).round() + rhr - 1;
+
+    final z2Min = (hrr * 0.60).round() + rhr;
+    final z2Max = (hrr * 0.70).round() + rhr - 1;
+
+    final z3Min = (hrr * 0.70).round() + rhr;
+    final z3Max = (hrr * 0.80).round() + rhr - 1;
+
+    final z4Min = (hrr * 0.80).round() + rhr;
+    final z4Max = (hrr * 0.90).round() + rhr - 1;
+
+    final z5Min = (hrr * 0.90).round() + rhr;
+    final z5Max = mhr;
+
     return PersonalRunningZones(
-      maxHeartRate: maxHr,
+      maxHeartRate: mhr,
+      restingHeartRate: rhr,
+      heartRateReserve: hrr,
       zone1: HeartRateZoneRange(
         zoneNumber: 1,
         name: 'Active Recovery',
-        minBpm: (maxHr * 0.50).round(),
-        maxBpm: (maxHr * 0.60).round() - 1,
-        description: 'Pemulihan aktif & pemanasan, sangat santai.',
+        minBpm: z1Min,
+        maxBpm: z1Max,
+        description: '50-60% HRR: Pemulihan aktif, pemanasan, sangat santai.',
         color: AppTheme.primaryTeal,
       ),
       zone2: HeartRateZoneRange(
         zoneNumber: 2,
         name: 'Aerobic Base (Easy Run)',
-        minBpm: (maxHr * 0.60).round(),
-        maxBpm: (maxHr * 0.70).round() - 1,
-        description: 'Membangun daya tahan & efisiensi pembakaran lemak. Kunci latihan 3-4x seminggu.',
+        minBpm: z2Min,
+        maxBpm: z2Max,
+        description: '60-70% HRR: Membangun fondasi daya tahan & efisiensi mitokondria. Kunci 80% porsi lari.',
         color: AppTheme.accentGreen,
       ),
       zone3: HeartRateZoneRange(
         zoneNumber: 3,
         name: 'Aerobic Endurance (Tempo)',
-        minBpm: (maxHr * 0.70).round(),
-        maxBpm: (maxHr * 0.80).round() - 1,
-        description: 'Meningkatkan ritme dan efisiensi kardiovaskular.',
+        minBpm: z3Min,
+        maxBpm: z3Max,
+        description: '70-80% HRR: Meningkatkan ritme kardiovaskular dan stamina maraton.',
         color: AppTheme.accentAmber,
       ),
       zone4: HeartRateZoneRange(
         zoneNumber: 4,
         name: 'Threshold (Ambang Laktat)',
-        minBpm: (maxHr * 0.80).round(),
-        maxBpm: (maxHr * 0.90).round() - 1,
-        description: 'Meningkatkan ambang lelah otot dan kecepatan lari.',
+        minBpm: z4Min,
+        maxBpm: z4Max,
+        description: '80-90% HRR: Meningkatkan ambang toleransi asam laktat dan kecepatan.',
         color: Colors.deepOrange,
       ),
       zone5: HeartRateZoneRange(
         zoneNumber: 5,
-        name: 'Max Effort (Sprint / Anaerobic)',
-        minBpm: (maxHr * 0.90).round(),
-        maxBpm: maxHr,
-        description: 'Daya ledak & kapasitas paru maksimal, durasi singkat.',
+        name: 'Max Effort (Sprint / Anaerobik)',
+        minBpm: z5Min,
+        maxBpm: z5Max,
+        description: '90-100% HRR: Daya ledak & kapasitas VO2 max maksimal, repetisi singkat.',
         color: AppTheme.accentRed,
       ),
+    );
+  }
+
+  factory PersonalRunningZones.fromAge(int age, {int? restingHeartRate}) {
+    return PersonalRunningZones.fromKarvonen(
+      age: age,
+      restingHeartRate: restingHeartRate,
     );
   }
 

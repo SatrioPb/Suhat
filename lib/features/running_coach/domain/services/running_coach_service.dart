@@ -4,9 +4,17 @@ import 'package:suhat/features/running_coach/domain/models/running_plan.dart';
 
 /// Service pemberi rekomendasi latihan lari cerdas berbasis prinsip kedokteran olahraga & data riil
 class RunningCoachService {
-  /// Menghitung 5 zona detak jantung lari berdasarkan usia
-  PersonalRunningZones calculateRunningZones(int userAge) {
-    return PersonalRunningZones.fromAge(userAge);
+  /// Menghitung 5 zona detak jantung lari berdasarkan metode Karvonen (Heart Rate Reserve)
+  PersonalRunningZones calculateRunningZones(
+    int userAge, {
+    int? restingHeartRate,
+    int? maxHeartRate,
+  }) {
+    return PersonalRunningZones.fromKarvonen(
+      age: userAge,
+      restingHeartRate: restingHeartRate,
+      maxHeartRate: maxHeartRate,
+    );
   }
 
   /// Menghitung akumulasi dan statistik lari dalam minggu kalender berjalan (Senin - Minggu)
@@ -82,11 +90,23 @@ class RunningCoachService {
     required HealthInsight insight,
     required HealthDataSummary summary,
     int userAge = 30,
+    int? customRestingHeartRate,
     int targetRuns = 4,
     DateTime? now,
   }) {
     final currentTime = now ?? DateTime.now();
-    final zones = calculateRunningZones(userAge);
+    final rhr = customRestingHeartRate ??
+        summary.latestRestingHeartRate?.bpm ??
+        (summary.heartRateHistory.isNotEmpty
+            ? summary.heartRateHistory
+                .map((e) => e.bpm)
+                .reduce((a, b) => a < b ? a : b)
+            : 60);
+
+    final zones = calculateRunningZones(
+      userAge,
+      restingHeartRate: rhr,
+    );
     final weekly = calculateWeeklySummary(
       summary,
       targetRuns: targetRuns,
@@ -122,7 +142,6 @@ class RunningCoachService {
     // Evaluasi Skor Pemulihan Tubuh (Recovery Score)
     final score = insight.recoveryScore;
     final hrv = summary.latestHrv?.rmssdMillis;
-    final rhr = summary.latestRestingHeartRate?.bpm;
     final sleepDurationMin = insight.sleepAnalysis.effectiveDuration.inMinutes;
 
     // Kondisi 1: Tubuh sangat lelah / Skor < 45 / Tidur < 5 jam
@@ -221,7 +240,7 @@ class RunningCoachService {
       targetDistanceKm: 4.5,
       targetZoneLabel: 'Zona 2 (${zones.zone2.name}) (${zones.zone2.minBpm}-${zones.zone2.maxBpm} BPM)',
       rationale:
-          'Kondisi tubuh stabil (Skor: $score/100${rhr != null ? ", RHR: $rhr BPM" : ""}). '
+          'Kondisi tubuh stabil (Skor: $score/100, RHR: $rhr BPM). '
           'Lari santai Zona 2 adalah kunci utama (80% porsi latihan) untuk memperkuat dinding kapiler jantung dan efisiensi paru-paru.',
       pacingTips:
           'Lari dengan ritme santai di mana Anda masih bisa bernapas melalui hidung atau berbicara satu kalimat penuh tanpa terengah-engah.',

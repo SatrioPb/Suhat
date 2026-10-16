@@ -23,7 +23,17 @@ final runningCoachStateProvider = Provider<RunningCoachState>((ref) {
   final targetRuns = ref.watch(runningWeeklyTargetRunsProvider);
   final runnerAge = ref.watch(runnerAgeProvider);
 
-  final zones = coachService.calculateRunningZones(runnerAge);
+  final rhr = healthState.summary.latestRestingHeartRate?.bpm ??
+      (healthState.summary.heartRateHistory.isNotEmpty
+          ? healthState.summary.heartRateHistory
+              .map((e) => e.bpm)
+              .reduce((a, b) => a < b ? a : b)
+          : 60);
+
+  final zones = coachService.calculateRunningZones(
+    runnerAge,
+    restingHeartRate: rhr,
+  );
   final weeklySummary = coachService.calculateWeeklySummary(
     healthState.summary,
     targetRuns: targetRuns,
@@ -32,6 +42,7 @@ final runningCoachStateProvider = Provider<RunningCoachState>((ref) {
     insight: healthInsight,
     summary: healthState.summary,
     userAge: runnerAge,
+    customRestingHeartRate: rhr,
     targetRuns: targetRuns,
   );
 

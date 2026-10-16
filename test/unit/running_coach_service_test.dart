@@ -14,20 +14,26 @@ void main() {
       service = RunningCoachService();
     });
 
-    test('calculateRunningZones calculates accurate 5 zones for age 30', () {
-      final zones = service.calculateRunningZones(30);
+    test('calculateRunningZones calculates accurate 5 zones using Karvonen HRR method', () {
+      final zones = service.calculateRunningZones(30, restingHeartRate: 60);
 
       expect(zones.maxHeartRate, 190);
+      expect(zones.restingHeartRate, 60);
+      expect(zones.heartRateReserve, 130);
       expect(zones.zone1.zoneNumber, 1);
-      expect(zones.zone1.minBpm, 95); // 50% of 190
+      expect(zones.zone1.minBpm, 125); // (130 * 0.50) + 60 = 125
+      expect(zones.zone1.maxBpm, 137); // (130 * 0.60) + 60 - 1 = 137
       expect(zones.zone2.zoneNumber, 2);
-      expect(zones.zone2.minBpm, 114); // 60% of 190
+      expect(zones.zone2.minBpm, 138); // (130 * 0.60) + 60 = 138
+      expect(zones.zone2.maxBpm, 150); // (130 * 0.70) + 60 - 1 = 150
       expect(zones.zone3.zoneNumber, 3);
-      expect(zones.zone3.minBpm, 133); // 70% of 190
+      expect(zones.zone3.minBpm, 151); // (130 * 0.70) + 60 = 151
+      expect(zones.zone3.maxBpm, 163); // (130 * 0.80) + 60 - 1 = 163
       expect(zones.zone4.zoneNumber, 4);
-      expect(zones.zone4.minBpm, 152); // 80% of 190
+      expect(zones.zone4.minBpm, 164); // (130 * 0.80) + 60 = 164
+      expect(zones.zone4.maxBpm, 176); // (130 * 0.90) + 60 - 1 = 176
       expect(zones.zone5.zoneNumber, 5);
-      expect(zones.zone5.minBpm, 171); // 90% of 190
+      expect(zones.zone5.minBpm, 177); // (130 * 0.90) + 60 = 177
       expect(zones.zone5.maxBpm, 190);
       expect(zones.allZones.length, 5);
     });

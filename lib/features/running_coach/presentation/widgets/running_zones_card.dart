@@ -49,9 +49,9 @@ class RunningZonesCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
-                        'Estimasi Max HR: ${zones.maxHeartRate} BPM',
+                        'Metode HRR (MHR ${zones.maxHeartRate} • RHR ${zones.restingHeartRate} BPM)',
                         style: const TextStyle(
-                          fontSize: 12,
+                          fontSize: 11,
                           color: AppTheme.textMuted,
                         ),
                         maxLines: 1,
@@ -63,24 +63,42 @@ class RunningZonesCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppTheme.surfaceLight,
+                    color: AppTheme.primaryTeal.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: AppTheme.borderSubtle),
+                    border: Border.all(color: AppTheme.primaryTeal.withOpacity(0.3)),
                   ),
                   child: const Text(
-                    'HR Zones',
+                    'Metode Karvonen',
                     style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.textMuted,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.primaryTeal,
                     ),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppTheme.surfaceLight,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                'Formula Karvonen: Target HR = (MHR - RHR) × %HRR + RHR\n'
+                'MHR: ${zones.maxHeartRate} BPM  |  RHR: ${zones.restingHeartRate} BPM  |  Cadangan (HRR): ${zones.heartRateReserve} BPM',
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.textDark,
+                  height: 1.35,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
             const Text(
-              'Panduan intensitas denyut nadi saat berlari agar adaptasi kardiovaskular maksimal tanpa risiko cedera:',
+              'Zona denyut lari beradaptasi dinamis dengan denyut jantung istirahat (RHR) riil Anda:',
               style: TextStyle(
                 fontSize: 12,
                 color: AppTheme.textDark,
