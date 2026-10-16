@@ -4,6 +4,7 @@ import '../features/analytics/pages/analytics_page.dart';
 import '../features/dashboard/pages/dashboard_page.dart';
 import '../features/device/pages/device_page.dart';
 import '../features/history/pages/history_page.dart';
+import '../features/running_coach/pages/running_coach_page.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -26,6 +27,7 @@ class _MainScreenState extends State<MainScreen> {
     final pages = [
       DashboardPage(onNavigateTab: _navigateToTab),
       const AnalyticsPage(),
+      const RunningCoachPage(),
       const HistoryPage(),
       const DevicePage(),
     ];
@@ -51,6 +53,11 @@ class _MainScreenState extends State<MainScreen> {
             icon: Icon(Icons.insights_outlined),
             selectedIcon: Icon(Icons.insights, color: AppTheme.primaryTeal),
             label: 'Analisis',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.directions_run_outlined),
+            selectedIcon: Icon(Icons.directions_run, color: AppTheme.primaryTeal),
+            label: 'Pelatih Lari',
           ),
           NavigationDestination(
             icon: Icon(Icons.history_outlined),

@@ -6,7 +6,9 @@ import '../../analytics/presentation/controllers/analytics_controller.dart';
 import '../../health_connect/domain/models/health_models.dart';
 import '../../health_connect/presentation/controllers/health_controller.dart';
 import '../../health_connect/presentation/state/health_state.dart';
+import '../../running_coach/presentation/controllers/running_coach_controller.dart';
 import '../widgets/compact_recovery_banner.dart';
+import '../widgets/compact_running_banner.dart';
 import '../widgets/metric_dual_grid.dart';
 import '../widgets/minimal_step_card.dart';
 
@@ -22,6 +24,7 @@ class DashboardPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final healthState = ref.watch(healthControllerProvider);
     final healthInsight = ref.watch(healthInsightProvider);
+    final coachState = ref.watch(runningCoachStateProvider);
     final controller = ref.read(healthControllerProvider.notifier);
 
     final now = DateTime.now();
@@ -82,16 +85,22 @@ class DashboardPage extends ConsumerWidget {
               onTapViewAnalysis: () => onNavigateTab(1),
             ),
 
-            // 2. Kartu Langkah Minimalis -> Tab 2 (Riwayat)
+            // 2. Rekomendasi Lari Hari Ini (Kompak) -> Tab 2 (Pelatih Lari)
+            CompactRunningBanner(
+              recommendation: coachState.recommendation,
+              onTapViewCoach: () => onNavigateTab(2),
+            ),
+
+            // 3. Kartu Langkah Minimalis -> Tab 3 (Riwayat)
             MinimalStepCard(
               totalSteps: healthState.summary.totalStepsToday,
               stepGoal: 10000,
               realDistanceMeters: healthState.summary.totalDistanceToday,
               realActiveCaloriesKcal: healthState.summary.totalActiveCaloriesToday,
-              onTap: () => onNavigateTab(2),
+              onTap: () => onNavigateTab(3),
             ),
 
-            // 3. Grid Dual Detak Jantung & Tidur
+            // 4. Grid Dual Detak Jantung & Tidur -> Tab 1 (Analisis)
             MetricDualGrid(
               latestHeartRate: healthState.summary.latestHeartRate,
               latestSleep: healthState.summary.latestSleep,
