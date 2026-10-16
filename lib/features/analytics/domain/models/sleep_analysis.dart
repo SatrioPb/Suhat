@@ -20,6 +20,21 @@ enum SleepDurationCategory {
         return 'Belum Ada Data';
     }
   }
+
+  String get shortLabel {
+    switch (this) {
+      case SleepDurationCategory.optimal:
+        return 'Optimal';
+      case SleepDurationCategory.fair:
+        return 'Cukup';
+      case SleepDurationCategory.short:
+        return 'Kurang';
+      case SleepDurationCategory.long:
+        return 'Panjang';
+      case SleepDurationCategory.noData:
+        return 'Tanpa Data';
+    }
+  }
 }
 
 /// Kategori evaluasi efisiensi tidur

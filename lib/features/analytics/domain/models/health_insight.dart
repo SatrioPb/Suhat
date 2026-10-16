@@ -23,6 +23,21 @@ enum RecoveryLevel {
         return 'Menunggu Data';
     }
   }
+
+  String get shortLabel {
+    switch (this) {
+      case RecoveryLevel.optimal:
+        return 'Prima';
+      case RecoveryLevel.good:
+        return 'Baik';
+      case RecoveryLevel.attentionNeeded:
+        return 'Perhatian';
+      case RecoveryLevel.restRequired:
+        return 'Istirahat';
+      case RecoveryLevel.insufficientData:
+        return 'Menunggu';
+    }
+  }
 }
 
 /// Rekomendasi terpadu dan skor pemulihan kesehatan

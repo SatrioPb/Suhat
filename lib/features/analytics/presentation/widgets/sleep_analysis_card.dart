@@ -27,59 +27,67 @@ class SleepAnalysisCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppTheme.accentIndigo.withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(
-                        Icons.nights_stay,
-                        color: AppTheme.accentIndigo,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Analisis Kualitas Tidur',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.textDark,
-                          ),
-                        ),
-                        Text(
-                          'Evaluasi efisiensi & tahapan',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: AppTheme.textMuted,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: durationColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: durationColor.withOpacity(0.3)),
+                    color: AppTheme.accentIndigo.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Text(
-                    analysis.durationCategory.label,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      color: durationColor,
+                  child: const Icon(
+                    Icons.nights_stay,
+                    color: AppTheme.accentIndigo,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Analisis Kualitas Tidur',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.textDark,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        'Evaluasi efisiensi & tahapan',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppTheme.textMuted,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 105),
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: durationColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: durationColor.withOpacity(0.3)),
+                    ),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        analysis.durationCategory.shortLabel,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: durationColor,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -107,24 +115,31 @@ class SleepAnalysisCard extends StatelessWidget {
               ),
             const Divider(height: 24, color: AppTheme.borderSubtle),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildMetricColumn(
-                  'Durasi Efektif',
-                  DateFormatter.formatDuration(analysis.effectiveDuration),
-                  AppTheme.primaryTeal,
+                Expanded(
+                  child: _buildMetricColumn(
+                    'Durasi Efektif',
+                    DateFormatter.formatDuration(analysis.effectiveDuration),
+                    AppTheme.primaryTeal,
+                  ),
                 ),
-                _buildMetricColumn(
-                  'Total di Ranjang',
-                  DateFormatter.formatDuration(analysis.totalDuration),
-                  AppTheme.textMuted,
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildMetricColumn(
+                    'Total di Ranjang',
+                    DateFormatter.formatDuration(analysis.totalDuration),
+                    AppTheme.textMuted,
+                  ),
                 ),
-                _buildMetricColumn(
-                  'Efisiensi Tidur',
-                  '${analysis.efficiencyPercentage.toStringAsFixed(1)}%',
-                  analysis.efficiencyPercentage >= 85
-                      ? AppTheme.accentGreen
-                      : AppTheme.accentAmber,
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildMetricColumn(
+                    'Efisiensi Tidur',
+                    '${analysis.efficiencyPercentage.toStringAsFixed(1)}%',
+                    analysis.efficiencyPercentage >= 85
+                        ? AppTheme.accentGreen
+                        : AppTheme.accentAmber,
+                  ),
                 ),
               ],
             ),
@@ -145,22 +160,22 @@ class SleepAnalysisCard extends StatelessWidget {
                   height: 10,
                   child: Row(
                     children: [
-                      if (analysis.deepSleepPercent > 0)
+                      if (analysis.deepSleepPercent.round() > 0)
                         Expanded(
                           flex: analysis.deepSleepPercent.round(),
                           child: Container(color: const Color(0xFF3B82F6)),
                         ),
-                      if (analysis.remSleepPercent > 0)
+                      if (analysis.remSleepPercent.round() > 0)
                         Expanded(
                           flex: analysis.remSleepPercent.round(),
                           child: Container(color: const Color(0xFF8B5CF6)),
                         ),
-                      if (analysis.lightSleepPercent > 0)
+                      if (analysis.lightSleepPercent.round() > 0)
                         Expanded(
                           flex: analysis.lightSleepPercent.round(),
                           child: Container(color: const Color(0xFF60A5FA)),
                         ),
-                      if (analysis.awakePercent > 0)
+                      if (analysis.awakePercent.round() > 0)
                         Expanded(
                           flex: analysis.awakePercent.round(),
                           child: Container(color: const Color(0xFFF59E0B)),
@@ -191,20 +206,26 @@ class SleepAnalysisCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 11,
-            color: AppTheme.textMuted,
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 11,
+              color: AppTheme.textMuted,
+            ),
           ),
         ),
         const SizedBox(height: 2),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            color: color,
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
           ),
         ),
       ],

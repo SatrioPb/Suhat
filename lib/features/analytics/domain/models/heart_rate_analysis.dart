@@ -20,6 +20,21 @@ enum HeartRateStatus {
         return 'Data Tidak Cukup';
     }
   }
+
+  String get shortLabel {
+    switch (this) {
+      case HeartRateStatus.normal:
+        return 'Normal';
+      case HeartRateStatus.elevated:
+        return 'Meningkat';
+      case HeartRateStatus.bradycardia:
+        return 'Bradikardia';
+      case HeartRateStatus.tachycardia:
+        return 'Takikardia';
+      case HeartRateStatus.insufficientData:
+        return 'Kurang Data';
+    }
+  }
 }
 
 /// Distribusi estimasi zona denyut jantung

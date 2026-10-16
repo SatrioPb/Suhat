@@ -28,6 +28,8 @@ class AnalyticsPage extends ConsumerWidget {
                 fontWeight: FontWeight.bold,
                 color: AppTheme.textDark,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             Text(
               'Evaluasi Kesiapan Fisik & Rekomendasi',
@@ -36,6 +38,8 @@ class AnalyticsPage extends ConsumerWidget {
                 color: AppTheme.textMuted,
                 fontWeight: FontWeight.normal,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
