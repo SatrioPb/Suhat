@@ -100,6 +100,46 @@ class MockHealthRepository implements HealthRepository {
         ],
       ),
       sleepHistory: [],
+      totalActiveCaloriesToday: 320.0,
+      totalCaloriesBurnedToday: 1980.0,
+      totalDistanceToday: 3950.0,
+      totalFloorsClimbedToday: 8.0,
+      exerciseRecords: [
+        ExerciseRecord(
+          activityName: 'Jalan Santai',
+          duration: const Duration(minutes: 30),
+          startTime: DateTime(2026, 10, 16, 6, 30),
+          endTime: DateTime(2026, 10, 16, 7, 0),
+          caloriesBurned: 120.0,
+          distanceMeters: 2000.0,
+          source: 'Google Health Connect',
+        ),
+      ],
+      latestHrv: HrvRecord(
+        rmssdMillis: 48.0,
+        timestamp: DateTime(2026, 10, 16, 7, 0),
+        source: 'Google Health Connect',
+      ),
+      latestRestingHeartRate: RestingHeartRateRecord(
+        bpm: 64,
+        timestamp: DateTime(2026, 10, 16, 7, 0),
+        source: 'Google Health Connect',
+      ),
+      latestOxygenSaturation: OxygenSaturationRecord(
+        percentage: 98.0,
+        timestamp: DateTime(2026, 10, 16, 7, 0),
+        source: 'Google Health Connect',
+      ),
+      latestWeight: WeightRecord(
+        weightKg: 68.0,
+        timestamp: DateTime(2026, 10, 16, 7, 0),
+        source: 'Google Health Connect',
+      ),
+      latestHeight: HeightRecord(
+        heightMeters: 1.72,
+        timestamp: DateTime(2026, 10, 16, 7, 0),
+        source: 'Google Health Connect',
+      ),
       lastFetched: DateTime(2026, 10, 16, 9, 30),
     );
   }
@@ -156,8 +196,17 @@ void main() {
     expect(find.text('Kesiapan & Pemulihan Fisik'), findsOneWidget);
     expect(find.text('Analisis Detak Jantung'), findsOneWidget);
     expect(find.text('Analisis Kualitas Tidur'), findsOneWidget);
+    expect(find.text('Tanda Vital & Biometrik'), findsOneWidget);
 
-    // 3. Switch to Perangkat Tab
+    // 3. Switch to Riwayat Tab
+    await tester.tap(find.text('Riwayat'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Riwayat Aktivitas & Vitalitas'), findsOneWidget);
+    expect(find.text('Kalori, Jarak & Olahraga'), findsOneWidget);
+    expect(find.text('Tanda Vital & Komposisi Tubuh'), findsOneWidget);
+
+    // 4. Switch to Perangkat Tab
     await tester.tap(find.text('Perangkat'));
     await tester.pumpAndSettle();
 

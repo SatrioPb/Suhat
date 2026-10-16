@@ -64,6 +64,9 @@ final healthInsightProvider = Provider<HealthInsight>((ref) {
     hrAnalysis: hrAnalysis,
     sleepAnalysis: sleepAnalysis,
     todaySteps: summary.totalStepsToday,
+    hrvRmssd: summary.latestHrv?.rmssdMillis,
+    restingBpm: summary.latestRestingHeartRate?.bpm,
+    spO2Percentage: summary.latestOxygenSaturation?.percentage,
   );
 });
 

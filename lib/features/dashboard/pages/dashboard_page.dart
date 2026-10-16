@@ -86,6 +86,8 @@ class DashboardPage extends ConsumerWidget {
             MinimalStepCard(
               totalSteps: healthState.summary.totalStepsToday,
               stepGoal: 10000,
+              realDistanceMeters: healthState.summary.totalDistanceToday,
+              realActiveCaloriesKcal: healthState.summary.totalActiveCaloriesToday,
               onTap: () => onNavigateTab(2),
             ),
 

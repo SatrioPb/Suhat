@@ -6,6 +6,7 @@ import '../presentation/controllers/analytics_controller.dart';
 import '../presentation/widgets/heart_rate_analysis_card.dart';
 import '../presentation/widgets/recovery_score_card.dart';
 import '../presentation/widgets/sleep_analysis_card.dart';
+import '../presentation/widgets/vitals_biometrics_card.dart';
 
 class AnalyticsPage extends ConsumerWidget {
   const AnalyticsPage({super.key});
@@ -66,6 +67,9 @@ class AnalyticsPage extends ConsumerWidget {
 
             // 3. Analisis Kualitas & Tahapan Tidur
             SleepAnalysisCard(analysis: healthInsight.sleepAnalysis),
+
+            // 4. Tanda Vital & Biometrik (RHR, HRV, SpO2, Berat, Tinggi, BMI, Workouts)
+            VitalsBiometricsCard(summary: healthState.summary),
           ],
         ),
       ),

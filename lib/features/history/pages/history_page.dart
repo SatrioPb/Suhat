@@ -5,6 +5,8 @@ import '../../health_connect/presentation/controllers/health_controller.dart';
 import '../../health_connect/presentation/widgets/heart_rate_card.dart';
 import '../../health_connect/presentation/widgets/sleep_card.dart';
 import '../../health_connect/presentation/widgets/steps_card.dart';
+import '../presentation/widgets/activity_metrics_card.dart';
+import '../presentation/widgets/biometrics_history_card.dart';
 
 class HistoryPage extends ConsumerWidget {
   const HistoryPage({super.key});
@@ -20,20 +22,24 @@ class HistoryPage extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Riwayat Aktivitas',
+              'Riwayat Aktivitas & Vitalitas',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: AppTheme.textDark,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             Text(
-              'Catatan Sampel & Log Pengukuran',
+              'Catatan Sampel & Log Pengukuran Lengkap',
               style: TextStyle(
                 fontSize: 11,
                 color: AppTheme.textMuted,
                 fontWeight: FontWeight.normal,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -52,15 +58,30 @@ class HistoryPage extends ConsumerWidget {
         child: ListView(
           padding: const EdgeInsets.only(top: 8, bottom: 32),
           children: [
+            // 1. Log Langkah & Segmen
             StepsCard(
               totalSteps: healthState.summary.totalStepsToday,
               stepRecords: healthState.summary.stepRecords,
               lastFetched: healthState.summary.lastFetched,
             ),
+
+            // 2. Kalori Aktif, Total Kalori, Jarak, Elevasi & Sesi Olahraga
+            ActivityMetricsCard(
+              summary: healthState.summary,
+            ),
+
+            // 3. Log Sampel Detak Jantung
             HeartRateCard(
               latestRecord: healthState.summary.latestHeartRate,
               history: healthState.summary.heartRateHistory,
             ),
+
+            // 4. Log Tanda Vital (RHR, HRV, SpO2) & Biometrik (Berat, Tinggi, BMI)
+            BiometricsHistoryCard(
+              summary: healthState.summary,
+            ),
+
+            // 5. Log Sesi Tidur & Tahapan
             SleepCard(
               latestSleep: healthState.summary.latestSleep,
               sleepHistory: healthState.summary.sleepHistory,

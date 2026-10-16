@@ -5,12 +5,16 @@ import '../../../../core/theme/app_theme.dart';
 class MinimalStepCard extends StatelessWidget {
   final int totalSteps;
   final int stepGoal;
+  final double? realDistanceMeters;
+  final double? realActiveCaloriesKcal;
   final VoidCallback? onTap;
 
   const MinimalStepCard({
     super.key,
     required this.totalSteps,
     this.stepGoal = 10000,
+    this.realDistanceMeters,
+    this.realActiveCaloriesKcal,
     this.onTap,
   });
 
@@ -22,10 +26,15 @@ class MinimalStepCard extends StatelessWidget {
     final progress = stepGoal > 0 ? (totalSteps / stepGoal).clamp(0.0, 1.0) : 0.0;
     final percentage = (progress * 100).toStringAsFixed(0);
 
-    // Estimasi jarak kasar: 1 langkah ~ 0.75 meter
-    final km = ((totalSteps * 0.75) / 1000).toStringAsFixed(1);
-    // Estimasi kalori kasar: 1 langkah ~ 0.04 kkal
-    final kcal = (totalSteps * 0.04).round();
+    // Jarak nyata dari Health Connect jika ada, atau estimasi kasar (1 langkah ~ 0.75m)
+    final km = realDistanceMeters != null && realDistanceMeters! > 0
+        ? (realDistanceMeters! / 1000.0).toStringAsFixed(1)
+        : ((totalSteps * 0.75) / 1000).toStringAsFixed(1);
+
+    // Kalori nyata dari Health Connect jika ada, atau estimasi kasar (1 langkah ~ 0.04 kkal)
+    final kcal = realActiveCaloriesKcal != null && realActiveCaloriesKcal! > 0
+        ? realActiveCaloriesKcal!.round()
+        : (totalSteps * 0.04).round();
 
     return InkWell(
       onTap: onTap,

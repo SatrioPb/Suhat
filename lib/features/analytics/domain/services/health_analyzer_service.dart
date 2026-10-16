@@ -184,6 +184,9 @@ class HealthAnalyzerService {
     required SleepAnalysis sleepAnalysis,
     int todaySteps = 0,
     int stepGoal = 10000,
+    double? hrvRmssd,
+    int? restingBpm,
+    double? spO2Percentage,
   }) {
     if (!hrAnalysis.hasData && !sleepAnalysis.hasData) {
       return HealthInsight.empty();
@@ -317,6 +320,25 @@ class HealthAnalyzerService {
     // Tambahan insight langkah jika ada
     if (todaySteps >= stepGoal) {
       advice.add('Target $stepGoal langkah tercapai! Pastikan melakukan pendinginan.');
+    }
+
+    // Tambahan evaluasi biomarker HRV jika tersedia
+    if (hrvRmssd != null) {
+      if (hrvRmssd >= 50) {
+        advice.add('Variabilitas detak jantung (HRV: ${hrvRmssd.round()} ms) prima, sistem syaraf otonom siap untuk aktivitas optimal.');
+      } else if (hrvRmssd < 25) {
+        advice.add('HRV tergolong rendah (${hrvRmssd.round()} ms). Waspadai keletihan sistem syaraf, perbanyak jeda istirahat.');
+      }
+    }
+
+    // Tambahan evaluasi SpO2 jika tersedia
+    if (spO2Percentage != null && spO2Percentage < 95) {
+      advice.add('Saturasi oksigen darah (${spO2Percentage.toStringAsFixed(1)}%) di bawah standar 95%. Periksa posisi strap jam.');
+    }
+
+    // Tambahan evaluasi Resting Heart Rate jika tersedia
+    if (restingBpm != null && restingBpm <= 65) {
+      advice.add('Detak jantung istirahat ($restingBpm BPM) efisien, mencerminkan kebugaran kardiovaskular yang terjaga.');
     }
 
     return HealthInsight(

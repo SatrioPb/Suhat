@@ -12,7 +12,7 @@ class HealthRepositoryImpl implements HealthRepository {
   HealthRepositoryImpl({Health? healthClient})
       : _health = healthClient ?? Health();
 
-  /// Daftar tipe data yang divalidasi pada Fase 1
+  /// Daftar tipe data yang didukung oleh Suhat
   static const List<HealthDataType> requiredTypes = [
     HealthDataType.STEPS,
     HealthDataType.HEART_RATE,
@@ -22,10 +22,30 @@ class HealthRepositoryImpl implements HealthRepository {
     HealthDataType.SLEEP_DEEP,
     HealthDataType.SLEEP_LIGHT,
     HealthDataType.SLEEP_REM,
+    HealthDataType.ACTIVE_ENERGY_BURNED,
+    HealthDataType.TOTAL_CALORIES_BURNED,
+    HealthDataType.DISTANCE_DELTA,
+    HealthDataType.FLIGHTS_CLIMBED,
+    HealthDataType.WORKOUT,
+    HealthDataType.HEART_RATE_VARIABILITY_RMSSD,
+    HealthDataType.HEIGHT,
+    HealthDataType.BLOOD_OXYGEN,
+    HealthDataType.RESTING_HEART_RATE,
+    HealthDataType.WEIGHT,
   ];
 
   /// Izin akses pembacaan yang sesuai
   static const List<HealthDataAccess> requiredPermissions = [
+    HealthDataAccess.READ,
+    HealthDataAccess.READ,
+    HealthDataAccess.READ,
+    HealthDataAccess.READ,
+    HealthDataAccess.READ,
+    HealthDataAccess.READ,
+    HealthDataAccess.READ,
+    HealthDataAccess.READ,
+    HealthDataAccess.READ,
+    HealthDataAccess.READ,
     HealthDataAccess.READ,
     HealthDataAccess.READ,
     HealthDataAccess.READ,
@@ -349,6 +369,296 @@ class HealthRepositoryImpl implements HealthRepository {
     );
     final latestSleep = sleepRecords.isNotEmpty ? sleepRecords.first : null;
 
+    // 4. Ambil Kalori Aktif (Active Calories Burned)
+    final activeCalRecords = <ActiveCaloriesRecord>[];
+    double totalActiveCal = 0.0;
+    try {
+      final points = await _health.getHealthDataFromTypes(
+        types: [HealthDataType.ACTIVE_ENERGY_BURNED],
+        startTime: midnight,
+        endTime: now,
+      );
+      for (final p in _health.removeDuplicates(points)) {
+        if (p.value is NumericHealthValue) {
+          final cal = (p.value as NumericHealthValue).numericValue.toDouble();
+          totalActiveCal += cal;
+          activeCalRecords.add(ActiveCaloriesRecord(
+            kcal: cal,
+            startTime: p.dateFrom,
+            endTime: p.dateTo,
+            source: p.sourceName.isNotEmpty
+                ? p.sourceName
+                : 'Google Health Connect',
+            deviceId: p.sourceDeviceId,
+          ));
+        }
+      }
+      activeCalRecords.sort((a, b) => b.startTime.compareTo(a.startTime));
+    } catch (e) {
+      debugPrint('Error fetching active calories: $e');
+    }
+
+    // 5. Ambil Total Kalori Terbakar (Total Calories Burned)
+    final totalCalRecords = <TotalCaloriesRecord>[];
+    double totalCal = 0.0;
+    try {
+      final points = await _health.getHealthDataFromTypes(
+        types: [HealthDataType.TOTAL_CALORIES_BURNED],
+        startTime: midnight,
+        endTime: now,
+      );
+      for (final p in _health.removeDuplicates(points)) {
+        if (p.value is NumericHealthValue) {
+          final cal = (p.value as NumericHealthValue).numericValue.toDouble();
+          totalCal += cal;
+          totalCalRecords.add(TotalCaloriesRecord(
+            kcal: cal,
+            startTime: p.dateFrom,
+            endTime: p.dateTo,
+            source: p.sourceName.isNotEmpty
+                ? p.sourceName
+                : 'Google Health Connect',
+            deviceId: p.sourceDeviceId,
+          ));
+        }
+      }
+      totalCalRecords.sort((a, b) => b.startTime.compareTo(a.startTime));
+    } catch (e) {
+      debugPrint('Error fetching total calories: $e');
+    }
+
+    // 6. Ambil Jarak Tempuh (Distance)
+    final distRecords = <DistanceRecord>[];
+    double totalDist = 0.0;
+    try {
+      final points = await _health.getHealthDataFromTypes(
+        types: [HealthDataType.DISTANCE_DELTA],
+        startTime: midnight,
+        endTime: now,
+      );
+      for (final p in _health.removeDuplicates(points)) {
+        if (p.value is NumericHealthValue) {
+          final dist = (p.value as NumericHealthValue).numericValue.toDouble();
+          totalDist += dist;
+          distRecords.add(DistanceRecord(
+            distanceMeters: dist,
+            startTime: p.dateFrom,
+            endTime: p.dateTo,
+            source: p.sourceName.isNotEmpty
+                ? p.sourceName
+                : 'Google Health Connect',
+            deviceId: p.sourceDeviceId,
+          ));
+        }
+      }
+      distRecords.sort((a, b) => b.startTime.compareTo(a.startTime));
+    } catch (e) {
+      debugPrint('Error fetching distance: $e');
+    }
+
+    // 7. Ambil Elevasi / Lantai Dinaiki (Floors Climbed)
+    final elevRecords = <ElevationRecord>[];
+    double totalFloors = 0.0;
+    try {
+      final points = await _health.getHealthDataFromTypes(
+        types: [HealthDataType.FLIGHTS_CLIMBED],
+        startTime: midnight,
+        endTime: now,
+      );
+      for (final p in _health.removeDuplicates(points)) {
+        if (p.value is NumericHealthValue) {
+          final floors =
+              (p.value as NumericHealthValue).numericValue.toDouble();
+          totalFloors += floors;
+          elevRecords.add(ElevationRecord(
+            floorsClimbed: floors,
+            startTime: p.dateFrom,
+            endTime: p.dateTo,
+            source: p.sourceName.isNotEmpty
+                ? p.sourceName
+                : 'Google Health Connect',
+            deviceId: p.sourceDeviceId,
+          ));
+        }
+      }
+      elevRecords.sort((a, b) => b.startTime.compareTo(a.startTime));
+    } catch (e) {
+      debugPrint('Error fetching elevation/floors: $e');
+    }
+
+    // 8. Ambil Sesi Olahraga (Workouts / Exercise)
+    final exerciseRecords = <ExerciseRecord>[];
+    try {
+      final points = await _health.getHealthDataFromTypes(
+        types: [HealthDataType.WORKOUT],
+        startTime: now.subtract(const Duration(days: 7)),
+        endTime: now,
+      );
+      for (final p in _health.removeDuplicates(points)) {
+        String activityName = 'Olahraga';
+        double? cal;
+        double? dist;
+        if (p.value is WorkoutHealthValue) {
+          final wv = p.value as WorkoutHealthValue;
+          activityName = wv.workoutActivityType.name.replaceAll('_', ' ');
+          cal = wv.totalEnergyBurned?.toDouble();
+          dist = wv.totalDistance?.toDouble();
+        }
+        exerciseRecords.add(ExerciseRecord(
+          activityName: activityName,
+          duration: p.dateTo.difference(p.dateFrom),
+          startTime: p.dateFrom,
+          endTime: p.dateTo,
+          caloriesBurned: cal,
+          distanceMeters: dist,
+          source: p.sourceName.isNotEmpty
+              ? p.sourceName
+              : 'Google Health Connect',
+          deviceId: p.sourceDeviceId,
+        ));
+      }
+      exerciseRecords.sort((a, b) => b.startTime.compareTo(a.startTime));
+    } catch (e) {
+      debugPrint('Error fetching workouts: $e');
+    }
+
+    // 9. Ambil Variabilitas Detak Jantung (HRV - RMSSD)
+    final hrvRecords = <HrvRecord>[];
+    try {
+      final points = await _health.getHealthDataFromTypes(
+        types: [HealthDataType.HEART_RATE_VARIABILITY_RMSSD],
+        startTime: now.subtract(const Duration(days: 7)),
+        endTime: now,
+      );
+      for (final p in _health.removeDuplicates(points)) {
+        if (p.value is NumericHealthValue) {
+          hrvRecords.add(HrvRecord(
+            rmssdMillis:
+                (p.value as NumericHealthValue).numericValue.toDouble(),
+            timestamp: p.dateTo,
+            source: p.sourceName.isNotEmpty
+                ? p.sourceName
+                : 'Google Health Connect',
+            deviceId: p.sourceDeviceId,
+          ));
+        }
+      }
+      hrvRecords.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    } catch (e) {
+      debugPrint('Error fetching HRV: $e');
+    }
+    final latestHrv = hrvRecords.isNotEmpty ? hrvRecords.first : null;
+
+    // 10. Ambil Detak Jantung Istirahat (Resting Heart Rate)
+    final restingHrRecords = <RestingHeartRateRecord>[];
+    try {
+      final points = await _health.getHealthDataFromTypes(
+        types: [HealthDataType.RESTING_HEART_RATE],
+        startTime: now.subtract(const Duration(days: 7)),
+        endTime: now,
+      );
+      for (final p in _health.removeDuplicates(points)) {
+        if (p.value is NumericHealthValue) {
+          restingHrRecords.add(RestingHeartRateRecord(
+            bpm: (p.value as NumericHealthValue).numericValue.round(),
+            timestamp: p.dateTo,
+            source: p.sourceName.isNotEmpty
+                ? p.sourceName
+                : 'Google Health Connect',
+            deviceId: p.sourceDeviceId,
+          ));
+        }
+      }
+      restingHrRecords.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    } catch (e) {
+      debugPrint('Error fetching resting HR: $e');
+    }
+    final latestRestingHr =
+        restingHrRecords.isNotEmpty ? restingHrRecords.first : null;
+
+    // 11. Ambil Saturasi Oksigen Darah (SpO2)
+    final spo2Records = <OxygenSaturationRecord>[];
+    try {
+      final points = await _health.getHealthDataFromTypes(
+        types: [HealthDataType.BLOOD_OXYGEN],
+        startTime: now.subtract(const Duration(days: 7)),
+        endTime: now,
+      );
+      for (final p in _health.removeDuplicates(points)) {
+        if (p.value is NumericHealthValue) {
+          var pct = (p.value as NumericHealthValue).numericValue.toDouble();
+          if (pct <= 1.0 && pct > 0) {
+            pct = pct * 100.0;
+          }
+          spo2Records.add(OxygenSaturationRecord(
+            percentage: pct,
+            timestamp: p.dateTo,
+            source: p.sourceName.isNotEmpty
+                ? p.sourceName
+                : 'Google Health Connect',
+            deviceId: p.sourceDeviceId,
+          ));
+        }
+      }
+      spo2Records.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    } catch (e) {
+      debugPrint('Error fetching SpO2: $e');
+    }
+    final latestSpo2 = spo2Records.isNotEmpty ? spo2Records.first : null;
+
+    // 12. Ambil Tinggi Badan (Height)
+    HeightRecord? latestHeight;
+    try {
+      final points = await _health.getHealthDataFromTypes(
+        types: [HealthDataType.HEIGHT],
+        startTime: now.subtract(const Duration(days: 90)),
+        endTime: now,
+      );
+      final sorted = _health.removeDuplicates(points);
+      sorted.sort((a, b) => b.dateTo.compareTo(a.dateTo));
+      if (sorted.isNotEmpty && sorted.first.value is NumericHealthValue) {
+        latestHeight = HeightRecord(
+          heightMeters:
+              (sorted.first.value as NumericHealthValue).numericValue.toDouble(),
+          timestamp: sorted.first.dateTo,
+          source: sorted.first.sourceName.isNotEmpty
+              ? sorted.first.sourceName
+              : 'Google Health Connect',
+          deviceId: sorted.first.sourceDeviceId,
+        );
+      }
+    } catch (e) {
+      debugPrint('Error fetching height: $e');
+    }
+
+    // 13. Ambil Berat Badan (Weight)
+    final weightRecords = <WeightRecord>[];
+    try {
+      final points = await _health.getHealthDataFromTypes(
+        types: [HealthDataType.WEIGHT],
+        startTime: now.subtract(const Duration(days: 90)),
+        endTime: now,
+      );
+      for (final p in _health.removeDuplicates(points)) {
+        if (p.value is NumericHealthValue) {
+          weightRecords.add(WeightRecord(
+            weightKg:
+                (p.value as NumericHealthValue).numericValue.toDouble(),
+            timestamp: p.dateTo,
+            source: p.sourceName.isNotEmpty
+                ? p.sourceName
+                : 'Google Health Connect',
+            deviceId: p.sourceDeviceId,
+          ));
+        }
+      }
+      weightRecords.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    } catch (e) {
+      debugPrint('Error fetching weight: $e');
+    }
+    final latestWeight =
+        weightRecords.isNotEmpty ? weightRecords.first : null;
+
     return HealthDataSummary(
       totalStepsToday: totalSteps,
       stepRecords: stepRecords,
@@ -356,6 +666,24 @@ class HealthRepositoryImpl implements HealthRepository {
       heartRateHistory: hrRecords,
       latestSleep: latestSleep,
       sleepHistory: sleepRecords,
+      totalActiveCaloriesToday: totalActiveCal,
+      activeCaloriesRecords: activeCalRecords,
+      totalCaloriesBurnedToday: totalCal,
+      totalCaloriesRecords: totalCalRecords,
+      totalDistanceToday: totalDist,
+      distanceRecords: distRecords,
+      totalFloorsClimbedToday: totalFloors,
+      elevationRecords: elevRecords,
+      exerciseRecords: exerciseRecords,
+      latestHrv: latestHrv,
+      hrvHistory: hrvRecords,
+      latestHeight: latestHeight,
+      latestOxygenSaturation: latestSpo2,
+      oxygenSaturationHistory: spo2Records,
+      latestRestingHeartRate: latestRestingHr,
+      restingHeartRateHistory: restingHrRecords,
+      latestWeight: latestWeight,
+      weightHistory: weightRecords,
       lastFetched: now,
     );
   }
