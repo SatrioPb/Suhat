@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../analytics/presentation/controllers/analytics_controller.dart';
+import '../../../analytics/presentation/widgets/heart_rate_analysis_card.dart';
+import '../../../analytics/presentation/widgets/recovery_score_card.dart';
+import '../../../analytics/presentation/widgets/sleep_analysis_card.dart';
 import '../controllers/health_controller.dart';
 import '../widgets/health_status_card.dart';
 import '../widgets/heart_rate_card.dart';
@@ -13,6 +17,7 @@ class HealthDashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final healthState = ref.watch(healthControllerProvider);
+    final healthInsight = ref.watch(healthInsightProvider);
     final controller = ref.read(healthControllerProvider.notifier);
 
     // Tampilkan snackbar jika ada error message
@@ -37,7 +42,7 @@ class HealthDashboardScreen extends ConsumerWidget {
             Row(
               children: [
                 const Text(
-                  'Suhat',
+                  'Supercalla',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
@@ -53,7 +58,7 @@ class HealthDashboardScreen extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: const Text(
-                    'Fase 1: Health Connect',
+                    'Health Connect + Analisis',
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
@@ -64,7 +69,7 @@ class HealthDashboardScreen extends ConsumerWidget {
               ],
             ),
             const Text(
-              'Validasi Pembacaan Data Kesehatan Nyata',
+              'Analisis Detak Jantung, Tidur, & Kesiapan Fisik',
               style: TextStyle(
                 fontSize: 11,
                 color: AppTheme.textMuted,
@@ -87,15 +92,21 @@ class HealthDashboardScreen extends ConsumerWidget {
                   controller.openStoreForHealthConnect(),
               onRefresh: () => controller.fetchHealthData(),
             ),
+            // Kartu Skor Pemulihan & Rekomendasi Terpadu
+            RecoveryScoreCard(insight: healthInsight),
             StepsCard(
               totalSteps: healthState.summary.totalStepsToday,
               stepRecords: healthState.summary.stepRecords,
               lastFetched: healthState.summary.lastFetched,
             ),
+            // Analisis Mendalam Detak Jantung (Zona & Status)
+            HeartRateAnalysisCard(analysis: healthInsight.heartRateAnalysis),
             HeartRateCard(
               latestRecord: healthState.summary.latestHeartRate,
               history: healthState.summary.heartRateHistory,
             ),
+            // Analisis Mendalam Kualitas & Tahapan Tidur
+            SleepAnalysisCard(analysis: healthInsight.sleepAnalysis),
             SleepCard(
               latestSleep: healthState.summary.latestSleep,
               sleepHistory: healthState.summary.sleepHistory,
@@ -139,7 +150,8 @@ class HealthDashboardScreen extends ConsumerWidget {
                 ),
                 SizedBox(height: 4),
                 Text(
-                  'Sesuai rencana implementasi Fase 1, aplikasi Suhat tidak mengklaim koneksi langsung melalui Bluetooth sebelum modul BLE diimplementasikan dan diverifikasi pada fase berikutnya. Seluruh metrik di atas bersumber dari Google Health Connect.',
+                  'Analisis dan rekomendasi di atas dihitung berdasarkan sampel yang disinkronkan oleh Google Health Connect. '
+                  'Aplikasi Supercalla Health tidak mengklaim koneksi langsung via Bluetooth sebelum modul BLE diimplementasikan pada fase berikutnya.',
                   style: TextStyle(
                     fontSize: 11,
                     color: AppTheme.textMuted,

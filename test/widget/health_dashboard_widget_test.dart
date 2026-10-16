@@ -120,32 +120,38 @@ void main() {
     await tester.pumpAndSettle();
 
     // Verify Title & Badges
-    expect(find.text('Suhat'), findsOneWidget);
-    expect(find.text('Fase 1: Health Connect'), findsOneWidget);
+    expect(find.text('Supercalla'), findsOneWidget);
+    expect(find.text('Health Connect + Analisis'), findsOneWidget);
 
     // Verify Status Card & Explicit Provenance Note
     expect(find.text('Integrasi Health Connect'), findsOneWidget);
     expect(find.text('Izin Membaca: Aktif'), findsOneWidget);
     expect(find.text('Catatan Sumber Data (Fase 1)'), findsOneWidget);
 
+    // Verify Recovery & Recommendation Card
+    expect(find.text('Kesiapan & Pemulihan Fisik'), findsOneWidget);
+    expect(find.text('Rekomendasi Tindakan:'), findsOneWidget);
+
     // Verify Steps Card
     expect(find.text('Langkah (Steps)'), findsOneWidget);
     expect(find.textContaining('5'), findsWidgets);
 
-    // Verify Heart Rate Card
+    // Verify Heart Rate Analysis & Raw Card
+    expect(find.text('Analisis Detak Jantung'), findsOneWidget);
     expect(find.text('Detak Jantung (Heart Rate)'), findsOneWidget);
-    expect(find.text('74'), findsOneWidget);
-    expect(find.text('BPM'), findsOneWidget);
+    expect(find.text('74'), findsWidgets);
+    expect(find.text('BPM'), findsWidgets);
 
-    // Verify Sleep Card
+    // Verify Sleep Analysis & Raw Card
+    expect(find.text('Analisis Kualitas Tidur'), findsOneWidget);
     expect(find.text('Tidur (Sleep)'), findsOneWidget);
-    expect(find.text('8j'), findsOneWidget);
+    expect(find.text('8j'), findsWidgets);
 
     // Verify Honest Bluetooth Disclaimer Footer
     expect(find.text('Koneksi Bluetooth Langsung: Belum Aktif'), findsOneWidget);
     expect(
         find.textContaining(
-            'tidak mengklaim koneksi langsung melalui Bluetooth'),
+            'tidak mengklaim koneksi langsung via Bluetooth'),
         findsOneWidget);
   });
 }
