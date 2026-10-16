@@ -150,7 +150,7 @@ class HealthDashboardScreen extends ConsumerWidget {
                 ),
                 SizedBox(height: 4),
                 Text(
-                  'Analisis dan rekomendasi di atas dihitung berdasarkan sampel yang disinkronkan oleh Google Health Connect. '
+                  'Analisis dan rekomendasi di atas dihitung berdasarkan data riil yang disinkronkan oleh Google Health Connect. '
                   'Aplikasi Supercalla Health tidak mengklaim koneksi langsung via Bluetooth sebelum modul BLE diimplementasikan pada fase berikutnya.',
                   style: TextStyle(
                     fontSize: 11,

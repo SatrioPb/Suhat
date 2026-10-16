@@ -75,7 +75,8 @@ class HealthAnalyzerService {
       statusDescription: statusDesc,
       zones: zones,
       latestMeasurementTime: summary.latest?.timestamp,
-      sampleCount: summary.history.length,
+      latestSource: summary.latest?.source,
+      recordCount: summary.history.length,
     );
   }
 
@@ -284,16 +285,18 @@ class HealthAnalyzerService {
     if (score >= 80) {
       level = RecoveryLevel.optimal;
       headline = 'Pemulihan Tubuh Prima (Siap Beraktivitas)';
-      summary =
-          'Kombinasi kualitas tidur yang sangat baik dan detak jantung istirahat yang stabil menunjukkan sistem kardiovaskular dan otot Anda telah pulih optimal.';
+      summary = hrAnalysis.hasData
+          ? 'Kombinasi kualitas tidur yang prima dan denyut jantung rata-rata (${hrAnalysis.avgBpm} BPM) yang stabil menunjukkan pemulihan kardiovaskular dan otot telah optimal.'
+          : 'Kualitas dan efisiensi tidur sangat baik, mendukung regenerasi energi fisik optimal. (Menunggu rekaman denyut jantung riil dari Health Connect).';
       advice.add('Kondisi fisik prima untuk melakukan latihan olahraga intensitas sedang hingga tinggi.');
       advice.add('Pertahankan jadwal tidur yang konsisten untuk menjaga ritme sirkadian.');
       advice.add('Pastikan asupan nutrisi seimbang untuk mendukung aktivitas harian.');
     } else if (score >= 65) {
       level = RecoveryLevel.good;
       headline = 'Kondisi Tubuh Baik';
-      summary =
-          'Pemulihan fisik Anda berjalan baik. Tubuh memiliki energi yang cukup untuk menjalani rutinitas harian dengan produktif.';
+      summary = hrAnalysis.hasData
+          ? 'Pemulihan fisik berjalan baik dengan denyut nadi rata-rata ${hrAnalysis.avgBpm} BPM. Energi tubuh cukup untuk menjalani rutinitas harian secara produktif.'
+          : 'Pemulihan fisik berjalan baik berdasarkan durasi dan efisiensi tidur yang memadai.';
       advice.add('Aman untuk berolahraga rutin dengan pemanasan yang cukup.');
       advice.add('Perhatikan hidrasi tubuh secara berkala sepanjang hari.');
       if (sleepAnalysis.durationCategory == SleepDurationCategory.short) {
@@ -302,16 +305,18 @@ class HealthAnalyzerService {
     } else if (score >= 45) {
       level = RecoveryLevel.attentionNeeded;
       headline = 'Pemulihan Perlu Perhatian';
-      summary =
-          'Data menunjukkan indikasi pemulihan yang belum tuntas, kemungkinan akibat tidur kurang dari 6 jam atau denyut jantung yang cenderung meningkat.';
+      summary = hrAnalysis.hasData
+          ? 'Data menunjukkan pemulihan belum tuntas (denyut rata-rata: ${hrAnalysis.avgBpm} BPM). Perhatikan waktu istirahat dan kurangi beban berlebih.'
+          : 'Indikasi pemulihan belum tuntas, kemungkinan akibat tidur kurang dari 6 jam atau kualitas istirahat yang belum optimal.';
       advice.add('Prioritaskan istirahat aktif (active recovery) seperti jalan santai atau peregangan ringan.');
       advice.add('Hindari kafein berlebih di sore hari agar tidak mengganggu tidur malam berikutnya.');
       advice.add('Luangkan waktu power nap 15-20 menit jika merasakan kantuk di siang hari.');
     } else {
       level = RecoveryLevel.restRequired;
       headline = 'Tubuh Membutuhkan Istirahat Ekstra';
-      summary =
-          'Skor pemulihan rendah menandakan beban stres fisik yang cukup tinggi. Sangat dianjurkan memberi waktu jeda bagi tubuh untuk regenerasi.';
+      summary = hrAnalysis.hasData
+          ? 'Beban kardiovaskular terindikasi tinggi (denyut rata-rata: ${hrAnalysis.avgBpm} BPM). Sangat dianjurkan memberi waktu jeda bagi tubuh untuk regenerasi.'
+          : 'Skor pemulihan rendah menandakan kebutuhan istirahat fisik. Sangat dianjurkan memberi waktu jeda bagi tubuh untuk regenerasi.';
       advice.add('Tunda sesi latihan fisik berat hari ini, fokus pada pemulihan tubuh.');
       advice.add('Tingkatkan konsumsi air putih dan konsumsi makanan kaya mikronutrien.');
       advice.add('Lakukan teknik pernapasan relaksasi (deep breathing) untuk menurunkan detak jantung istirahat.');

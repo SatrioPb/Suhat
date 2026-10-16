@@ -36,11 +36,11 @@ class RecoveryScoreCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         'Kesiapan & Pemulihan Fisik',
                         style: TextStyle(
                           fontSize: 15,
@@ -51,8 +51,10 @@ class RecoveryScoreCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
-                        'Analisis Detak Jantung & Tidur',
-                        style: TextStyle(
+                        insight.heartRateAnalysis.hasData
+                            ? 'Analisis Detak Jantung & Tidur Riil'
+                            : 'Analisis Sesi Tidur (Menunggu Denyut Riil)',
+                        style: const TextStyle(
                           fontSize: 12,
                           color: AppTheme.textMuted,
                         ),

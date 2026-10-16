@@ -18,25 +18,28 @@ final healthInsightProvider = Provider<HealthInsight>((ref) {
 
   final summary = healthState.summary;
 
-  // Ubah ke model HeartRateSummary
-  final hrSummary = HeartRateSummary(
-    latest: summary.latestHeartRate != null
-        ? HeartRateSample(
-            bpm: summary.latestHeartRate!.bpm,
-            timestamp: summary.latestHeartRate!.timestamp,
-            source: summary.latestHeartRate!.source,
-            deviceId: summary.latestHeartRate!.deviceId,
-          )
-        : null,
-    history: summary.heartRateHistory
-        .map((e) => HeartRateSample(
-              bpm: e.bpm,
-              timestamp: e.timestamp,
-              source: e.source,
-              deviceId: e.deviceId,
-            ))
-        .toList(),
-  );
+  // Ubah ke model HeartRateSummary menggunakan data riil
+  final hrList = summary.heartRateHistory
+      .map((e) => HeartRateSample(
+            bpm: e.bpm,
+            timestamp: e.timestamp,
+            source: e.source,
+            deviceId: e.deviceId,
+          ))
+      .toList();
+
+  // Jika history kosong tapi latestHeartRate ada, sertakan titik data tersebut
+  if (hrList.isEmpty && summary.latestHeartRate != null) {
+    hrList.add(HeartRateSample(
+      bpm: summary.latestHeartRate!.bpm,
+      timestamp: summary.latestHeartRate!.timestamp,
+      source: summary.latestHeartRate!.source,
+      deviceId: summary.latestHeartRate!.deviceId,
+    ));
+  }
+
+  // fromSamples otomatis menghitung latest, minBpm, maxBpm, dan avgBpm secara akurat dari data riil
+  final hrSummary = HeartRateSummary.fromSamples(hrList);
 
   // Ubah ke model SleepSession
   SleepSession? sleepSession;

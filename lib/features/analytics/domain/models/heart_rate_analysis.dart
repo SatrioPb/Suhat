@@ -51,11 +51,14 @@ class HeartRateZones {
     this.peakCount = 0,
   });
 
-  int get totalSamples =>
+  int get totalRecords =>
       restingCount + fatBurnCount + cardioCount + peakCount;
+
+  /// Alias kompatibilitas
+  int get totalSamples => totalRecords;
 }
 
-/// Hasil analisis komprehensif data detak jantung
+/// Hasil analisis komprehensif data detak jantung riil
 class HeartRateAnalysis {
   final int? latestBpm;
   final int minBpm;
@@ -65,7 +68,8 @@ class HeartRateAnalysis {
   final String statusDescription;
   final HeartRateZones zones;
   final DateTime? latestMeasurementTime;
-  final int sampleCount;
+  final String? latestSource;
+  final int recordCount;
 
   const HeartRateAnalysis({
     this.latestBpm,
@@ -76,14 +80,19 @@ class HeartRateAnalysis {
     required this.statusDescription,
     this.zones = const HeartRateZones(),
     this.latestMeasurementTime,
-    this.sampleCount = 0,
-  });
+    this.latestSource,
+    int recordCount = 0,
+    int? sampleCount,
+  }) : recordCount = sampleCount ?? recordCount;
 
-  bool get hasData => latestBpm != null && sampleCount > 0;
+  /// Alias kompatibilitas dengan pengujian lama
+  int get sampleCount => recordCount;
+
+  bool get hasData => latestBpm != null && recordCount > 0;
 
   factory HeartRateAnalysis.empty() => const HeartRateAnalysis(
         status: HeartRateStatus.insufficientData,
         statusDescription:
-            'Belum ada sampel detak jantung yang dicatat di Health Connect.',
+            'Belum ada rekaman detak jantung nyata yang dicatat di Google Health Connect.',
       );
 }

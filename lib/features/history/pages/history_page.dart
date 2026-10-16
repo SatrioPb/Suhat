@@ -32,7 +32,7 @@ class HistoryPage extends ConsumerWidget {
               overflow: TextOverflow.ellipsis,
             ),
             Text(
-              'Catatan Sampel & Log Pengukuran Lengkap',
+              'Log Pengukuran & Rekaman Riil Lengkap',
               style: TextStyle(
                 fontSize: 11,
                 color: AppTheme.textMuted,
@@ -70,7 +70,7 @@ class HistoryPage extends ConsumerWidget {
               summary: healthState.summary,
             ),
 
-            // 3. Log Sampel Detak Jantung
+            // 3. Log Detak Jantung Riil
             HeartRateCard(
               latestRecord: healthState.summary.latestHeartRate,
               history: healthState.summary.heartRateHistory,

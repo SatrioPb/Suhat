@@ -144,7 +144,7 @@ class HealthRepositoryImpl implements HealthRepository {
     DateTime? endTime,
   }) async {
     final now = DateTime.now();
-    final start = startTime ?? now.subtract(const Duration(hours: 24));
+    final start = startTime ?? now.subtract(const Duration(hours: 48));
     final end = endTime ?? now;
 
     try {

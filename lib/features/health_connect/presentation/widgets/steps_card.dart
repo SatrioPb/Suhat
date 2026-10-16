@@ -122,7 +122,7 @@ class StepsCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'Riwayat Sampel Interval',
+                    'Riwayat Interval Langkah',
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.bold,

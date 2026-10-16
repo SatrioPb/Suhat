@@ -159,7 +159,7 @@ class HealthRepositoryImpl implements HealthRepository {
     try {
       await _ensureConfigured();
       final now = DateTime.now();
-      final start = startTime ?? now.subtract(const Duration(hours: 24));
+      final start = startTime ?? now.subtract(const Duration(hours: 48));
       final end = endTime ?? now;
 
       final dataPoints = await _health.getHealthDataFromTypes(
@@ -323,7 +323,7 @@ class HealthRepositoryImpl implements HealthRepository {
   }) async {
     await _ensureConfigured();
     final now = DateTime.now();
-    final start = startTime ?? now.subtract(const Duration(hours: 24));
+    final defaultStart = startTime ?? now.subtract(const Duration(hours: 48));
     final end = endTime ?? now;
     final midnight = DateTime(now.year, now.month, now.day);
 
@@ -358,8 +358,11 @@ class HealthRepositoryImpl implements HealthRepository {
       debugPrint('Error fetching step detail points: $e');
     }
 
-    // Ambil detak jantung
-    final hrRecords = await fetchHeartRate(startTime: start, endTime: end);
+    // Ambil detak jantung (rentang 48 jam ke belakang agar mencakup sinkronisasi smartwatch berkala)
+    final hrRecords = await fetchHeartRate(
+      startTime: defaultStart,
+      endTime: end,
+    );
     final latestHr = hrRecords.isNotEmpty ? hrRecords.first : null;
 
     // Ambil tidur (rentang 48 jam ke belakang untuk mencakup tidur semalam)
