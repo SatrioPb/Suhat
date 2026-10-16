@@ -112,35 +112,62 @@ class BleService {
   }
 
   /// Menemukan GATT Services pada jam dan subscribe ke Heart Rate 0x2A37
-  Future<List<String>> discoverAndSubscribe() async {
-    final discoveredNames = <String>[];
-    if (_connectedDevice == null) return discoveredNames;
+  Future<List<BleGattServiceInfo>> discoverAndSubscribe() async {
+    final discoveredList = <BleGattServiceInfo>[];
+    if (_connectedDevice == null) return discoveredList;
 
     try {
       final services = await _connectedDevice!.discoverServices();
 
       for (final s in services) {
-        discoveredNames.add(s.uuid.str.toUpperCase());
+        final serviceUuidStr = s.uuid.str.toUpperCase();
+        final serviceName = BleGattServiceInfo.resolveServiceName(serviceUuidStr);
+        final charUuids = <String>[];
 
-        // Cari Standard Heart Rate Service (0x180D)
-        if (s.uuid == heartRateServiceUuid) {
-          for (final c in s.characteristics) {
-            if (c.uuid == heartRateMeasurementCharUuid) {
-              await c.setNotifyValue(true);
+        for (final c in s.characteristics) {
+          final charUuidStr = c.uuid.str.toUpperCase();
+          charUuids.add(charUuidStr);
+
+          // Cek apakah ini Standard Heart Rate Service (0x180D) & Measurement (0x2A37)
+          final isHeartRateService = serviceUuidStr.toLowerCase().contains('180d');
+          final isHeartRateChar = charUuidStr.toLowerCase().contains('2a37');
+
+          if (isHeartRateService && isHeartRateChar) {
+            try {
+              if (c.properties.notify || c.properties.indicate) {
+                await c.setNotifyValue(true);
+              }
               await _hrSubscription?.cancel();
-              _hrSubscription = c.lastValueStream.listen((data) {
+              _hrSubscription = c.onValueReceived.listen((data) {
                 final hr = BleLiveHeartRate.parse(data);
                 if (hr != null) {
                   _liveHeartRateController.add(hr);
                 }
               });
-            }
+
+              // Baca data awal jika didukung
+              if (c.properties.read) {
+                final initialData = await c.read();
+                final hr = BleLiveHeartRate.parse(initialData);
+                if (hr != null) {
+                  _liveHeartRateController.add(hr);
+                }
+              }
+            } catch (_) {}
           }
         }
+
+        discoveredList.add(
+          BleGattServiceInfo(
+            uuid: serviceUuidStr,
+            name: serviceName,
+            characteristicUuids: charUuids,
+          ),
+        );
       }
     } catch (_) {}
 
-    return discoveredNames;
+    return discoveredList;
   }
 
   /// Membaca level baterai (0x180F -> 0x2A19) jika disediakan oleh perangkat
@@ -150,9 +177,9 @@ class BleService {
     try {
       final services = await _connectedDevice!.discoverServices();
       for (final s in services) {
-        if (s.uuid == batteryServiceUuid) {
+        if (s.uuid.str.toLowerCase().contains('180f')) {
           for (final c in s.characteristics) {
-            if (c.uuid == batteryLevelCharUuid) {
+            if (c.uuid.str.toLowerCase().contains('2a19')) {
               final val = await c.read();
               if (val.isNotEmpty) {
                 return val[0];

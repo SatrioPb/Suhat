@@ -114,3 +114,34 @@ class BleLiveHeartRate {
     );
   }
 }
+
+/// Informasi Layanan GATT Bluetooth yang ditemukan pada jam tangan
+class BleGattServiceInfo {
+  final String uuid;
+  final String name;
+  final List<String> characteristicUuids;
+
+  const BleGattServiceInfo({
+    required this.uuid,
+    required this.name,
+    required this.characteristicUuids,
+  });
+
+  /// Dapatkan nama layanan standar Bluetooth SIG atau vendor yang dikenal
+  static String resolveServiceName(String uuidString) {
+    final lower = uuidString.toLowerCase();
+    if (lower.contains('180d')) return 'Heart Rate Service (Detak Jantung Standar)';
+    if (lower.contains('180f')) return 'Battery Service (Baterai)';
+    if (lower.contains('180a')) return 'Device Information (Manufaktur & Model)';
+    if (lower.contains('1800')) return 'Generic Access';
+    if (lower.contains('1801')) return 'Generic Attribute';
+    if (lower.contains('1814')) return 'Running Speed and Cadence';
+    if (lower.contains('fee7')) return 'Tencent Sports Health Service';
+    if (lower.contains('fea0') || lower.contains('fea1') || lower.contains('fea2')) {
+      return 'FitBeing / Creek Sensor Data Service';
+    }
+    if (lower.contains('6e400001')) return 'Nordic UART Data Stream';
+    return 'Layanan Vendor Khusus (Proprietary)';
+  }
+}
+

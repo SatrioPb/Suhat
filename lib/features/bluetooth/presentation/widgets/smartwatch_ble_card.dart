@@ -293,23 +293,136 @@ class SmartwatchBleCard extends ConsumerWidget {
                   ],
                 ],
               ),
+
+              // Analisis Layanan Sensor yang Ditemukan
+              if (!state.hasStandardHeartRateService && state.discoveredServices.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppTheme.accentAmber.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppTheme.accentAmber.withOpacity(0.3)),
+                  ),
+                  child: const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.info_outline, size: 15, color: AppTheme.accentAmber),
+                          SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              'Layanan Standar 0x180D Tidak Ditemukan',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.textDark,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Supercalla MG5 terhubung pada Bluetooth, namun jam ini menggunakan protokol proprietary vendor (Creek/FitBeing), bukan broadcast publik 0x180D. Sensor PPG di jam baru aktif saat layar Heart Rate dibuka atau mode olahraga dimulai.',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: AppTheme.textMuted,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
+              // Daftar Layanan GATT Terdeteksi (Transparansi Hardware)
+              if (state.discoveredServices.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Theme(
+                  data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                  child: ExpansionTile(
+                    tilePadding: EdgeInsets.zero,
+                    dense: true,
+                    title: Text(
+                      'Lihat Layanan GATT Jam (${state.discoveredServices.length} Terdeteksi)',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.primaryTeal,
+                      ),
+                    ),
+                    children: state.discoveredServices.map((svc) {
+                      return Container(
+                        width: double.infinity,
+                        margin: const EdgeInsets.only(bottom: 6),
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppTheme.surfaceLight,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              svc.name,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.textDark,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'UUID: ${svc.uuid}',
+                              style: const TextStyle(
+                                fontSize: 9.5,
+                                fontFamily: 'monospace',
+                                color: AppTheme.textMuted,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
         const SizedBox(height: 10),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton.icon(
-            onPressed: () => controller.disconnect(),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppTheme.accentRed,
-              side: BorderSide(color: AppTheme.accentRed.withOpacity(0.5)),
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: () => controller.refreshConnectedDevice(),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppTheme.primaryTeal,
+                  side: BorderSide(color: AppTheme.primaryTeal.withOpacity(0.5)),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                icon: const Icon(Icons.refresh, size: 16),
+                label: const Text('Refresh Sensor', style: TextStyle(fontSize: 11)),
+              ),
             ),
-            icon: const Icon(Icons.bluetooth_disabled, size: 16),
-            label: const Text('Putuskan Koneksi Jam', style: TextStyle(fontSize: 12)),
-          ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: () => controller.disconnect(),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppTheme.accentRed,
+                  side: BorderSide(color: AppTheme.accentRed.withOpacity(0.5)),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                icon: const Icon(Icons.bluetooth_disabled, size: 16),
+                label: const Text('Putuskan', style: TextStyle(fontSize: 11)),
+              ),
+            ),
+          ],
         ),
       ],
     );

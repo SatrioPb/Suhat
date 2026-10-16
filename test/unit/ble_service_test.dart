@@ -102,5 +102,48 @@ void main() {
       expect(connected.connectedDevice?.isSupercalla, isTrue);
       expect(connected.liveHeartRateBpm, 76);
     });
+
+    test('BleGattServiceInfo resolves known Bluetooth SIG and vendor UUIDs accurately', () {
+      expect(BleGattServiceInfo.resolveServiceName('0000180D-0000-1000-8000-00805F9B34FB'),
+          contains('Heart Rate'));
+      expect(BleGattServiceInfo.resolveServiceName('180F'), contains('Battery'));
+      expect(BleGattServiceInfo.resolveServiceName('180A'), contains('Device Information'));
+      expect(BleGattServiceInfo.resolveServiceName('0000FEA0-0000-1000-8000-00805F9B34FB'),
+          contains('FitBeing'));
+      expect(BleGattServiceInfo.resolveServiceName('12345678-ABCD-0000-0000-000000000000'),
+          'Layanan Vendor Khusus (Proprietary)');
+    });
+
+    test('BleState detects whether standard 0x180D HR service or vendor service is present', () {
+      const stateWithoutHr = BleState(
+        discoveredServices: [
+          BleGattServiceInfo(
+            uuid: '00001800-0000-1000-8000-00805F9B34FB',
+            name: 'Generic Access',
+            characteristicUuids: [],
+          ),
+          BleGattServiceInfo(
+            uuid: '0000FEA0-0000-1000-8000-00805F9B34FB',
+            name: 'FitBeing / Creek Sensor Data Service',
+            characteristicUuids: [],
+          ),
+        ],
+      );
+
+      expect(stateWithoutHr.hasStandardHeartRateService, isFalse);
+      expect(stateWithoutHr.hasFitbeingVendorService, isTrue);
+
+      const stateWithHr = BleState(
+        discoveredServices: [
+          BleGattServiceInfo(
+            uuid: '0000180D-0000-1000-8000-00805F9B34FB',
+            name: 'Heart Rate Service',
+            characteristicUuids: ['00002A37-0000-1000-8000-00805F9B34FB'],
+          ),
+        ],
+      );
+
+      expect(stateWithHr.hasStandardHeartRateService, isTrue);
+    });
   });
 }

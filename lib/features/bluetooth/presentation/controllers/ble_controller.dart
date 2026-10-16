@@ -11,7 +11,7 @@ class BleState {
   final int? liveHeartRateBpm;
   final DateTime? lastHeartRateTime;
   final int? batteryLevel;
-  final List<String> discoveredServices;
+  final List<BleGattServiceInfo> discoveredServices;
   final String? errorMessage;
 
   const BleState({
@@ -30,6 +30,24 @@ class BleState {
   bool get isScanning => status == BleConnectionStatus.scanning;
   bool get isConnecting => status == BleConnectionStatus.connecting;
 
+  bool get hasStandardHeartRateService => discoveredServices.any(
+        (s) => s.uuid.toLowerCase().contains('180d'),
+      );
+
+  bool get hasBatteryService => discoveredServices.any(
+        (s) => s.uuid.toLowerCase().contains('180f'),
+      );
+
+  bool get hasFitbeingVendorService => discoveredServices.any(
+        (s) =>
+            s.uuid.toLowerCase().contains('fea0') ||
+            s.uuid.toLowerCase().contains('fea1') ||
+            s.uuid.toLowerCase().contains('fea2') ||
+            s.uuid.toLowerCase().contains('fee7') ||
+            s.name.contains('FitBeing') ||
+            s.name.contains('Vendor'),
+      );
+
   BleState copyWith({
     BleConnectionStatus? status,
     bool? isBluetoothOn,
@@ -38,7 +56,7 @@ class BleState {
     int? liveHeartRateBpm,
     DateTime? lastHeartRateTime,
     int? batteryLevel,
-    List<String>? discoveredServices,
+    List<BleGattServiceInfo>? discoveredServices,
     String? errorMessage,
     bool clearConnectedDevice = false,
     bool clearError = false,
@@ -164,6 +182,17 @@ class BleController extends StateNotifier<BleState> {
         errorMessage: 'Gagal terhubung ke ${device.name}. Pastikan jam dalam jangkauan dan Bluetooth aktif.',
       );
     }
+  }
+
+  /// Memperbarui pembacaan sensor dan layanan GATT perangkat yang terhubung
+  Future<void> refreshConnectedDevice() async {
+    if (state.connectedDevice == null) return;
+    final services = await _bleService.discoverAndSubscribe();
+    final battery = await _bleService.readBatteryLevel();
+    state = state.copyWith(
+      discoveredServices: services,
+      batteryLevel: battery,
+    );
   }
 
   /// Memutuskan koneksi
