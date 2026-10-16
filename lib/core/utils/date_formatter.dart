@@ -27,6 +27,19 @@ class DateFormatter {
     return _dateFormat.format(dateTime);
   }
 
+  /// Format tanggal lengkap: contoh "Jumat, 16 Oktober" dengan fallback aman
+  static String formatFullDate(DateTime dateTime) {
+    try {
+      return DateFormat('EEEE, d MMMM', 'id_ID').format(dateTime);
+    } catch (_) {
+      try {
+        return DateFormat('EEEE, d MMMM').format(dateTime);
+      } catch (_) {
+        return formatDate(dateTime);
+      }
+    }
+  }
+
   /// Format rentang waktu: contoh "23:00 - 06:30"
   static String formatTimeRange(DateTime start, DateTime end) {
     return '${formatTime(start)} - ${formatTime(end)}';

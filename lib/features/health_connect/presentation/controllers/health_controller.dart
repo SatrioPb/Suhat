@@ -5,15 +5,15 @@ import '../../domain/models/health_models.dart';
 import '../../domain/repositories/health_repository.dart';
 import '../state/health_state.dart';
 
-/// Provider untuk dependency injection HealthRepository
-final healthRepositoryProvider = Provider<HealthRepository>((ref) {
+/// Provider untuk dependency injection HealthRepository (Fase 1)
+final healthConnectRepositoryProvider = Provider<HealthRepository>((ref) {
   return HealthRepositoryImpl();
 });
 
 /// StateNotifierProvider untuk mengelola status Health Connect & data metrik
 final healthControllerProvider =
     StateNotifierProvider<HealthController, HealthState>((ref) {
-  final repository = ref.watch(healthRepositoryProvider);
+  final repository = ref.watch(healthConnectRepositoryProvider);
   return HealthController(repository);
 });
 

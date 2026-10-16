@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:suhat/app/main_screen.dart';
+import 'package:suhat/app/providers.dart';
 import 'package:suhat/features/health_connect/domain/models/health_models.dart';
 import 'package:suhat/features/health_connect/domain/repositories/health_repository.dart';
 import 'package:suhat/features/health_connect/presentation/controllers/health_controller.dart';
-import 'package:suhat/features/health_connect/presentation/screens/health_dashboard_screen.dart';
 
 class MockHealthRepository implements HealthRepository {
   @override
@@ -88,6 +90,13 @@ class MockHealthRepository implements HealthRepository {
         startTime: DateTime(2026, 10, 15, 23, 0),
         endTime: DateTime(2026, 10, 16, 7, 0),
         source: 'Google Health Connect',
+        stages: [
+          SleepStageRecord(
+            stage: SleepStageType.deep,
+            startTime: DateTime(2026, 10, 15, 23, 30),
+            endTime: DateTime(2026, 10, 16, 1, 30),
+          ),
+        ],
       ),
       sleepHistory: [],
       lastFetched: DateTime(2026, 10, 16, 9, 30),
@@ -96,8 +105,11 @@ class MockHealthRepository implements HealthRepository {
 }
 
 void main() {
-  testWidgets('HealthDashboardScreen renders all cards, values, and disclaimers',
+  testWidgets(
+      'MainScreen displays minimalist dashboard and navigates to dedicated menus',
       (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({'daily_step_goal': 10000});
+    final prefs = await SharedPreferences.getInstance();
     final mockRepo = MockHealthRepository();
 
     tester.view.physicalSize = const Size(1080, 2400);
@@ -108,50 +120,48 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          healthRepositoryProvider.overrideWithValue(mockRepo),
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          healthConnectRepositoryProvider.overrideWithValue(mockRepo),
         ],
         child: const MaterialApp(
-          home: HealthDashboardScreen(),
+          home: MainScreen(),
         ),
       ),
     );
 
-    // Initial pump & settlement
     await tester.pumpAndSettle();
 
-    // Verify Title & Badges
-    expect(find.text('Supercalla'), findsOneWidget);
-    expect(find.text('Health Connect + Analisis'), findsOneWidget);
+    // 1. Verify Minimalist Dashboard Content
+    expect(find.text('Supercalla Health'), findsOneWidget);
+    expect(find.text('Kesiapan Fisik'), findsOneWidget);
+    expect(find.text('Langkah Hari Ini'), findsOneWidget);
+    expect(find.text('5.230'), findsOneWidget);
+    expect(find.text('Detak Jantung'), findsOneWidget);
+    expect(find.text('74'), findsOneWidget);
+    expect(find.text('Tidur Semalam'), findsOneWidget);
+    expect(find.text('8j'), findsOneWidget);
 
-    // Verify Status Card & Explicit Provenance Note
-    expect(find.text('Integrasi Health Connect'), findsOneWidget);
-    expect(find.text('Izin Membaca: Aktif'), findsOneWidget);
-    expect(find.text('Catatan Sumber Data (Fase 1)'), findsOneWidget);
+    // Verify Navigation Destinations
+    expect(find.text('Dashboard'), findsOneWidget);
+    expect(find.text('Analisis'), findsOneWidget);
+    expect(find.text('Riwayat'), findsOneWidget);
+    expect(find.text('Perangkat'), findsOneWidget);
 
-    // Verify Recovery & Recommendation Card
+    // 2. Switch to Analisis Tab
+    await tester.tap(find.text('Analisis'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Analisis Kesehatan'), findsOneWidget);
     expect(find.text('Kesiapan & Pemulihan Fisik'), findsOneWidget);
-    expect(find.text('Rekomendasi Tindakan:'), findsOneWidget);
-
-    // Verify Steps Card
-    expect(find.text('Langkah (Steps)'), findsOneWidget);
-    expect(find.textContaining('5'), findsWidgets);
-
-    // Verify Heart Rate Analysis & Raw Card
     expect(find.text('Analisis Detak Jantung'), findsOneWidget);
-    expect(find.text('Detak Jantung (Heart Rate)'), findsOneWidget);
-    expect(find.text('74'), findsWidgets);
-    expect(find.text('BPM'), findsWidgets);
-
-    // Verify Sleep Analysis & Raw Card
     expect(find.text('Analisis Kualitas Tidur'), findsOneWidget);
-    expect(find.text('Tidur (Sleep)'), findsOneWidget);
-    expect(find.text('8j'), findsWidgets);
 
-    // Verify Honest Bluetooth Disclaimer Footer
-    expect(find.text('Koneksi Bluetooth Langsung: Belum Aktif'), findsOneWidget);
-    expect(
-        find.textContaining(
-            'tidak mengklaim koneksi langsung via Bluetooth'),
-        findsOneWidget);
+    // 3. Switch to Perangkat Tab
+    await tester.tap(find.text('Perangkat'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Perangkat & Pengaturan'), findsOneWidget);
+    expect(find.text('Panduan Smartwatch Supercalla'), findsOneWidget);
+    expect(find.text('Status Bluetooth: Tidak Aktif Langsung'), findsOneWidget);
   });
 }
