@@ -4,7 +4,6 @@ import '../../../../app/providers.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../health_connect/presentation/controllers/health_controller.dart';
 import '../../health_connect/presentation/widgets/health_status_card.dart';
-import '../../bluetooth/presentation/widgets/smartwatch_ble_card.dart';
 
 class DevicePage extends ConsumerWidget {
   const DevicePage({super.key});
@@ -53,14 +52,14 @@ class DevicePage extends ConsumerWidget {
             onRefresh: () => controller.fetchHealthData(),
           ),
 
-          // 2. Koneksi Langsung Bluetooth (BLE) Smartwatch Supercalla MG5
-          const SmartwatchBleCard(),
-
-          // 3. Petunjuk Sinkronisasi Smartwatch via Fitbeing
+          // 2. Petunjuk Sinkronisasi Smartwatch Supercalla MG5 via Fitbeing
           _buildFitbeingGuideCard(),
 
-          // 4. Pengaturan Target Langkah Harian
+          // 3. Pengaturan Target Langkah Harian
           _buildStepGoalCard(context, ref, currentGoal),
+
+          // 4. Informasi Sumber Data Health Connect
+          _buildHealthConnectNoticeCard(),
 
           // 5. Tentang Aplikasi & Privasi
           _buildAboutCard(),
@@ -218,6 +217,54 @@ class DevicePage extends ConsumerWidget {
     );
   }
 
+
+  Widget _buildHealthConnectNoticeCard() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.borderSubtle),
+      ),
+      child: const Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.health_and_safety_outlined,
+            size: 20,
+            color: AppTheme.primaryTeal,
+          ),
+          SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Sumber Data: Google Health Connect',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textDark,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Aplikasi Suhat menggunakan Google Health Connect sebagai pusat pertukaran data kesehatan terpadu. '
+                  'Semua metrik dari smartwatch (Supercalla MG5 melalui aplikasi Fitbeing) disinkronkan secara aman dan otomatis melalui Health Connect.',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: AppTheme.textMuted,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildAboutCard() {
     return Container(

@@ -211,8 +211,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Perangkat & Pengaturan'), findsOneWidget);
-    expect(find.text('Koneksi Bluetooth (BLE) Langsung'), findsOneWidget);
-    expect(find.text('Cari Supercalla MG5 (BLE)'), findsOneWidget);
+    expect(find.text('Panduan Smartwatch Supercalla'), findsOneWidget);
+    expect(find.text('Sumber Data: Google Health Connect'), findsOneWidget);
   });
 
   testWidgets(
