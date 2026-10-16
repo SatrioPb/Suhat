@@ -96,7 +96,6 @@ class BleService {
 
       final device = BluetoothDevice.fromId(deviceId);
       await device.connect(
-        license: License.nonprofit,
         timeout: const Duration(seconds: 15),
         autoConnect: false,
       );
