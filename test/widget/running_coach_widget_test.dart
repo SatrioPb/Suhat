@@ -9,6 +9,50 @@ import 'package:suhat/features/health_connect/domain/repositories/health_reposit
 import 'package:suhat/features/health_connect/presentation/controllers/health_controller.dart';
 import 'package:suhat/features/running_coach/pages/running_coach_page.dart';
 import 'package:suhat/features/running_coach/presentation/widgets/today_workout_card.dart';
+import 'package:suhat/features/weather_aqi/domain/models/weather_aqi_models.dart';
+import 'package:suhat/features/weather_aqi/presentation/controllers/weather_aqi_controller.dart';
+
+const dummyWeather = WeatherData(
+  temperature: 24.5,
+  apparentTemperature: 25.0,
+  relativeHumidity: 60,
+  weatherCode: 0,
+  windSpeed: 8.5,
+  precipitation: 0.0,
+);
+
+const dummyAqi = AirQualityData(
+  usAqi: 35,
+  pm25: 8.5,
+  pm10: 12.0,
+  level: AirQualityLevel.good,
+);
+
+final dummyCondition = OutdoorRunningCondition.evaluate(
+  weather: dummyWeather,
+  airQuality: dummyAqi,
+  locationName: 'Jakarta',
+  latitude: -6.2088,
+  longitude: 106.8456,
+);
+
+class FakeWeatherAqiController extends StateNotifier<WeatherAqiState>
+    implements WeatherAqiController {
+  FakeWeatherAqiController()
+      : super(
+          WeatherAqiState(
+            isLoading: false,
+            condition: dummyCondition,
+            selectedLocation: PresetLocation.defaultLocation,
+          ),
+        );
+
+  @override
+  Future<void> fetchCondition({PresetLocation? location, bool forceRefresh = false}) async {}
+
+  @override
+  Future<void> changeLocation(PresetLocation newLocation) async {}
+}
 
 class MockHealthRepository implements HealthRepository {
   @override
@@ -140,6 +184,7 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           healthConnectRepositoryProvider.overrideWithValue(mockRepo),
+          weatherAqiControllerProvider.overrideWith((ref) => FakeWeatherAqiController()),
         ],
         child: const MaterialApp(
           home: Scaffold(
@@ -153,9 +198,18 @@ void main() {
 
     expect(find.text('Pelatih Lari Cerdas'), findsOneWidget);
     expect(find.text('Rekomendasi Lari Hari Ini'), findsOneWidget);
-    expect(find.text('Target Lari Mingguan'), findsOneWidget);
+    expect(find.text('Cuaca & Kualitas Udara'), findsOneWidget);
 
     // Scroll to reveal remaining cards in outer ListView
+    await tester.scrollUntilVisible(
+      find.text('Target Lari Mingguan'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Target Lari Mingguan'), findsOneWidget);
+
     await tester.scrollUntilVisible(
       find.text('5 Zona Detak Jantung Lari'),
       300,
@@ -186,6 +240,7 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           healthConnectRepositoryProvider.overrideWithValue(mockRepo),
+          weatherAqiControllerProvider.overrideWith((ref) => FakeWeatherAqiController()),
         ],
         child: const MaterialApp(
           home: MainScreen(),
@@ -206,12 +261,26 @@ void main() {
     expect(find.byType(RunningCoachPage), findsOneWidget);
     expect(find.byType(TodayWorkoutCard), findsOneWidget);
 
-    // Scroll to reveal RunningZonesCard
-    final runningList = find.descendant(
+    final runningScrollable = find.descendant(
       of: find.byType(RunningCoachPage),
-      matching: find.byType(ListView),
+      matching: find.byType(Scrollable),
+    ).first;
+
+    // Scroll to reveal OutdoorWeatherAqiCard
+    await tester.scrollUntilVisible(
+      find.text('Cuaca & Kualitas Udara'),
+      200,
+      scrollable: runningScrollable,
     );
-    await tester.drag(runningList.first, const Offset(0, -400));
+    await tester.pumpAndSettle();
+    expect(find.text('Cuaca & Kualitas Udara'), findsOneWidget);
+
+    // Scroll to reveal RunningZonesCard
+    await tester.scrollUntilVisible(
+      find.text('5 Zona Detak Jantung Lari'),
+      300,
+      scrollable: runningScrollable,
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('5 Zona Detak Jantung Lari'), findsOneWidget);

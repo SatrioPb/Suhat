@@ -7,6 +7,7 @@ import 'package:suhat/features/running_coach/presentation/widgets/overtraining_s
 import 'package:suhat/features/running_coach/presentation/widgets/running_zones_card.dart';
 import 'package:suhat/features/running_coach/presentation/widgets/today_workout_card.dart';
 import 'package:suhat/features/running_coach/presentation/widgets/weekly_running_progress_card.dart';
+import 'package:suhat/features/weather_aqi/presentation/widgets/outdoor_weather_aqi_card.dart';
 
 class RunningCoachPage extends ConsumerWidget {
   const RunningCoachPage({super.key});
@@ -62,7 +63,10 @@ class RunningCoachPage extends ConsumerWidget {
             // 1. Rekomendasi Latihan Lari Hari Ini
             TodayWorkoutCard(recommendation: coachState.recommendation),
 
-            // 2. Pelacak Target Lari Mingguan (3-4x seminggu)
+            // 2. Kondisi Cuaca & Kualitas Udara Luar Ruangan (Outdoor Weather & AQI)
+            const OutdoorWeatherAqiCard(),
+
+            // 3. Pelacak Target Lari Mingguan (3-4x seminggu)
             WeeklyRunningProgressCard(summary: coachState.weeklySummary),
 
             // 3. Panduan 5 Zona Detak Jantung Lari Pribadi

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../running_coach/domain/models/running_plan.dart';
+import '../../weather_aqi/presentation/controllers/weather_aqi_controller.dart';
 
-class CompactRunningBanner extends StatelessWidget {
+class CompactRunningBanner extends ConsumerWidget {
   final RunningWorkoutRecommendation recommendation;
   final VoidCallback onTapViewCoach;
 
@@ -13,9 +15,11 @@ class CompactRunningBanner extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final workout = recommendation.workoutType;
     final color = workout.color;
+    final weatherState = ref.watch(weatherAqiControllerProvider);
+    final condition = weatherState.condition;
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -69,6 +73,38 @@ class CompactRunningBanner extends StatelessWidget {
                             ),
                           ),
                         ),
+                        if (condition != null) ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                            decoration: BoxDecoration(
+                              color: condition.airQuality.level.color.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  '${condition.weather.temperature.toStringAsFixed(0)}°C',
+                                  style: const TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.textDark,
+                                  ),
+                                ),
+                                const SizedBox(width: 3),
+                                Text(
+                                  'AQI ${condition.airQuality.usAqi}',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold,
+                                    color: condition.airQuality.level.color,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                     const SizedBox(height: 2),
