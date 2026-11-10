@@ -36,22 +36,21 @@ enum AirQualityLevel {
     }
   }
 
-  Color get color {
+  Color resolveColor(SuhatColors colors) {
     switch (this) {
       case AirQualityLevel.good:
-        return AppTheme.accentGreen;
+        return colors.accentPine;
       case AirQualityLevel.moderate:
-        return AppTheme.accentAmber;
       case AirQualityLevel.unhealthyForSensitive:
-        return Colors.orange;
+        return colors.statusCaution;
       case AirQualityLevel.unhealthy:
-        return AppTheme.accentRed;
       case AirQualityLevel.veryUnhealthy:
-        return Colors.purple;
       case AirQualityLevel.hazardous:
-        return Colors.brown;
+        return colors.statusAlert;
     }
   }
+
+  Color get color => resolveColor(SuhatColors.light);
 
   String get description {
     switch (this) {
@@ -91,18 +90,19 @@ enum RunningFeasibility {
     }
   }
 
-  Color get color {
+  Color resolveColor(SuhatColors colors) {
     switch (this) {
       case RunningFeasibility.optimal:
-        return AppTheme.accentGreen;
       case RunningFeasibility.acceptable:
-        return AppTheme.primaryTeal;
+        return colors.accentPine;
       case RunningFeasibility.caution:
-        return AppTheme.accentAmber;
+        return colors.statusCaution;
       case RunningFeasibility.notRecommended:
-        return AppTheme.accentRed;
+        return colors.statusAlert;
     }
   }
+
+  Color get color => resolveColor(SuhatColors.light);
 
   IconData get icon {
     switch (this) {

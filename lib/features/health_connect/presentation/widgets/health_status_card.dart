@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/date_formatter.dart';
+import '../../../../core/widgets/editorial_ui.dart';
 import '../../domain/models/health_models.dart';
 import '../state/health_state.dart';
 
@@ -20,76 +21,73 @@ class HealthStatusCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryTeal.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.health_and_safety,
-                    color: AppTheme.primaryTeal,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Integrasi Health Connect',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.textDark,
-                        ),
+    final c = context.suhatColors;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: c.surfaceElevated,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: c.hairline, width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Integrasi Health Connect',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: c.inkPrimary,
                       ),
-                      Text(
-                        'Validasi Akses & Sumber Data',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppTheme.textMuted,
-                        ),
+                    ),
+                    Text(
+                      'Validasi akses dan sinkronisasi data',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: c.inkSecondary,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                IconButton(
-                  tooltip: 'Muat ulang data',
-                  onPressed: state.isLoading ? null : onRefresh,
-                  icon: state.isLoading
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.refresh, color: AppTheme.primaryTeal),
-                ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            _buildStatusBadges(),
-            const SizedBox(height: 14),
-            _buildHonestProvenanceNotice(),
-            const SizedBox(height: 12),
-            _buildActionButtons(),
-          ],
-        ),
+              ),
+              IconButton(
+                tooltip: 'Muat ulang data Health Connect',
+                onPressed: state.isLoading ? null : onRefresh,
+                icon: state.isLoading
+                    ? SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: c.accentPine,
+                        ),
+                      )
+                    : Icon(Icons.refresh, color: c.accentPine),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          _buildStatusRows(c),
+          const SizedBox(height: 14),
+          Divider(height: 1, thickness: 1, color: c.hairline),
+          const SizedBox(height: 12),
+          _buildHonestProvenanceNotice(c),
+          const SizedBox(height: 14),
+          _buildActionButtons(c),
+        ],
       ),
     );
   }
 
-  Widget _buildStatusBadges() {
+  Widget _buildStatusRows(SuhatColors c) {
     String availText;
     Color availColor;
     IconData availIcon;
@@ -97,27 +95,27 @@ class HealthStatusCard extends StatelessWidget {
     switch (state.availability) {
       case HealthConnectAvailability.available:
         availText = 'Health Connect Terpasang';
-        availColor = AppTheme.accentGreen;
+        availColor = c.accentPine;
         availIcon = Icons.check_circle_outline;
         break;
       case HealthConnectAvailability.updateRequired:
         availText = 'Perlu Update Health Connect';
-        availColor = AppTheme.accentAmber;
+        availColor = c.statusCaution;
         availIcon = Icons.warning_amber_rounded;
         break;
       case HealthConnectAvailability.notInstalled:
         availText = 'Health Connect Belum Terpasang';
-        availColor = AppTheme.accentRed;
+        availColor = c.statusAlert;
         availIcon = Icons.error_outline;
         break;
       case HealthConnectAvailability.unsupportedPlatform:
         availText = 'Platform Tidak Didukung (Bukan Android)';
-        availColor = AppTheme.textMuted;
+        availColor = c.inkSecondary;
         availIcon = Icons.device_unknown;
         break;
       case HealthConnectAvailability.checking:
         availText = 'Memeriksa Ketersediaan...';
-        availColor = AppTheme.textMuted;
+        availColor = c.inkSecondary;
         availIcon = Icons.hourglass_top;
         break;
     }
@@ -129,145 +127,84 @@ class HealthStatusCard extends StatelessWidget {
     switch (state.permissions) {
       case HealthPermissionStatus.granted:
         permText = 'Izin Membaca: Aktif';
-        permColor = AppTheme.accentGreen;
-        permIcon = Icons.verified_user;
+        permColor = c.accentPine;
+        permIcon = Icons.verified_user_outlined;
         break;
       case HealthPermissionStatus.denied:
         permText = 'Izin Membaca: Ditolak / Belum Diberikan';
-        permColor = AppTheme.accentRed;
-        permIcon = Icons.gpp_bad;
+        permColor = c.statusAlert;
+        permIcon = Icons.gpp_bad_outlined;
         break;
       case HealthPermissionStatus.partiallyGranted:
         permText = 'Izin Membaca: Sebagian';
-        permColor = AppTheme.accentAmber;
-        permIcon = Icons.gpp_maybe;
+        permColor = c.statusCaution;
+        permIcon = Icons.gpp_maybe_outlined;
         break;
       case HealthPermissionStatus.unknown:
         permText = 'Izin Membaca: Belum Dikonfirmasi';
-        permColor = AppTheme.textMuted;
+        permColor = c.inkSecondary;
         permIcon = Icons.help_outline;
         break;
     }
 
-    return Column(
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
       children: [
-        _buildPill(
-          icon: availIcon,
-          label: availText,
-          color: availColor,
-        ),
-        const SizedBox(height: 8),
-        _buildPill(
-          icon: permIcon,
-          label: permText,
-          color: permColor,
-        ),
+        EditorialStatusTag(label: availText, color: availColor, icon: availIcon),
+        EditorialStatusTag(label: permText, color: permColor, icon: permIcon),
       ],
     );
   }
 
-  Widget _buildPill({
-    required IconData icon,
-    required String label,
-    required Color color,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.2)),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 18, color: color),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: color,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget _buildHonestProvenanceNotice(SuhatColors c) {
+    final hasSynced =
+        state.summary.lastFetched != DateTime.fromMillisecondsSinceEpoch(0);
 
-  Widget _buildHonestProvenanceNotice() {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF1F5F9),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppTheme.borderSubtle),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
-            children: [
-              Icon(
-                Icons.info_outline,
-                size: 16,
-                color: AppTheme.textMuted,
-              ),
-              SizedBox(width: 6),
-              Text(
-                'Catatan Sumber Data (Fase 1)',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textDark,
-                ),
-              ),
-            ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Sumber Data Riil',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: c.inkPrimary,
           ),
-          const SizedBox(height: 4),
-          const Text(
-            '• Data diambil secara nyata melalui Google Health Connect API.\n'
-            '• Suhat TIDAK terhubung langsung melalui Bluetooth. Data berasal dari sensor perangkat atau wearable yang sudah disinkronkan oleh pengguna ke Health Connect.\n'
-            '• Setiap rekaman mencantumkan stempel waktu (timestamp) pengukuran aktual.',
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Data diambil dari Google Health Connect API berdasarkan sinkronisasi perangkat wearable Anda. Setiap rekaman mencantumkan waktu pengukuran asli.',
+          style: TextStyle(
+            fontSize: 11.5,
+            color: c.inkSecondary,
+            height: 1.4,
+          ),
+        ),
+        if (hasSynced) ...[
+          const SizedBox(height: 6),
+          Text(
+            'Terakhir disinkronkan: ${DateFormatter.formatDateTime(state.summary.lastFetched)}',
             style: TextStyle(
               fontSize: 11,
-              color: AppTheme.textMuted,
-              height: 1.4,
+              fontWeight: FontWeight.w700,
+              color: c.accentPine,
+              fontFeatures: AppTheme.tabularNumbers,
             ),
           ),
-          if (state.summary.lastFetched != DateTime.fromMillisecondsSinceEpoch(0))
-            Padding(
-              padding: const EdgeInsets.only(top: 6),
-              child: Text(
-                'Terakhir disinkronkan: ${DateFormatter.formatDateTime(state.summary.lastFetched)}',
-                style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.primaryTeal,
-                ),
-              ),
-            ),
         ],
-      ),
+      ],
     );
   }
 
-  Widget _buildActionButtons() {
+  Widget _buildActionButtons(SuhatColors c) {
     if (state.availability == HealthConnectAvailability.notInstalled ||
         state.availability == HealthConnectAvailability.updateRequired) {
       return SizedBox(
         width: double.infinity,
         child: FilledButton.icon(
-          style: FilledButton.styleFrom(
-            backgroundColor: AppTheme.primaryTeal,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
           onPressed: onInstallHealthConnect,
-          icon: const Icon(Icons.download),
+          icon: const Icon(Icons.download, size: 18),
           label: Text(
             state.availability == HealthConnectAvailability.updateRequired
                 ? 'Perbarui Health Connect di Play Store'
@@ -281,23 +218,17 @@ class HealthStatusCard extends StatelessWidget {
       return SizedBox(
         width: double.infinity,
         child: FilledButton.icon(
-          style: FilledButton.styleFrom(
-            backgroundColor: AppTheme.primaryTeal,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
           onPressed: state.isRequestingPermission ? null : onRequestPermissions,
           icon: state.isRequestingPermission
-              ? const SizedBox(
+              ? SizedBox(
                   width: 18,
                   height: 18,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: Colors.white,
+                    color: c.onAccentPine,
                   ),
                 )
-              : const Icon(Icons.security),
+              : const Icon(Icons.security, size: 18),
           label: Text(
             state.isRequestingPermission
                 ? 'Menunggu Konfirmasi Izin...'

@@ -19,49 +19,92 @@ class MetricDualGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.suhatColors;
+    final textScale = MediaQuery.textScalerOf(context).scale(1.0);
+
+    final hrColumn = _buildEditorialCell(
+      c: c,
+      onTap: onTapHeartRate,
+      icon: Icons.favorite_outline,
+      iconColor: c.statusAlert,
+      title: 'Detak Jantung',
+      mainValue: latestHeartRate != null ? '${latestHeartRate!.bpm}' : '--',
+      unit: 'BPM',
+      subtext: latestHeartRate != null
+          ? DateFormatter.formatTime(latestHeartRate!.timestamp)
+          : 'Belum ada data',
+    );
+
+    final sleepColumn = _buildEditorialCell(
+      c: c,
+      onTap: onTapSleep,
+      icon: Icons.bedtime_outlined,
+      iconColor: c.accentPine,
+      title: 'Tidur Semalam',
+      mainValue: latestSleep != null
+          ? DateFormatter.formatDuration(latestSleep!.totalDuration)
+          : '--',
+      unit: '',
+      subtext: latestSleep != null
+          ? '${DateFormatter.formatTime(latestSleep!.startTime)} - ${DateFormatter.formatTime(latestSleep!.endTime)}'
+          : 'Belum ada data',
+    );
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: Row(
-        children: [
-          // Heart Rate Card
-          Expanded(
-            child: _buildTile(
-              onTap: onTapHeartRate,
-              icon: Icons.favorite,
-              iconColor: AppTheme.accentRed,
-              title: 'Detak Jantung',
-              mainValue: latestHeartRate != null ? '${latestHeartRate!.bpm}' : '--',
-              unit: 'BPM',
-              subtext: latestHeartRate != null
-                  ? DateFormatter.formatTime(latestHeartRate!.timestamp)
-                  : 'Belum ada data',
-              tag: '24 jam',
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final stackVertically =
+              constraints.maxWidth < 300 || textScale > 1.45;
+
+          if (stackVertically) {
+            return DecoratedBox(
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(color: c.hairline),
+                  bottom: BorderSide(color: c.hairline),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  hrColumn,
+                  Divider(height: 1, thickness: 1, color: c.hairline),
+                  sleepColumn,
+                ],
+              ),
+            );
+          }
+
+          return DecoratedBox(
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(color: c.hairline),
+                bottom: BorderSide(color: c.hairline),
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
-          // Sleep Card
-          Expanded(
-            child: _buildTile(
-              onTap: onTapSleep,
-              icon: Icons.bedtime,
-              iconColor: AppTheme.accentIndigo,
-              title: 'Tidur Semalam',
-              mainValue: latestSleep != null
-                  ? DateFormatter.formatDuration(latestSleep!.totalDuration)
-                  : '--',
-              unit: '',
-              subtext: latestSleep != null
-                  ? '${DateFormatter.formatTime(latestSleep!.startTime)} - ${DateFormatter.formatTime(latestSleep!.endTime)}'
-                  : 'Belum ada data',
-              tag: 'Sesi terakhir',
+            child: IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(child: hrColumn),
+                  VerticalDivider(
+                    width: 24,
+                    thickness: 1,
+                    color: c.hairline,
+                  ),
+                  Expanded(child: sleepColumn),
+                ],
+              ),
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildTile({
+  Widget _buildEditorialCell({
+    required SuhatColors c,
     required VoidCallback onTap,
     required IconData icon,
     required Color iconColor,
@@ -69,104 +112,74 @@ class MetricDualGrid extends StatelessWidget {
     required String mainValue,
     required String unit,
     required String subtext,
-    required String tag,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.borderSubtle),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.02),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: iconColor.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(icon, color: iconColor, size: 18),
-                ),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    tag,
-                    textAlign: TextAlign.end,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w500,
-                      color: AppTheme.textMuted,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Icon(icon, color: iconColor, size: 15),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: c.inkSecondary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: AppTheme.textMuted,
+                ],
               ),
-            ),
-            const SizedBox(height: 4),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.baseline,
-                textBaseline: TextBaseline.alphabetic,
+              const SizedBox(height: 8),
+              Wrap(
+                crossAxisAlignment: WrapCrossAlignment.end,
+                spacing: 4,
                 children: [
                   Text(
                     mainValue,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
-                      color: AppTheme.textDark,
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w800,
+                      color: c.inkPrimary,
+                      letterSpacing: -0.5,
+                      fontFeatures: AppTheme.tabularNumbers,
                     ),
                   ),
-                  if (unit.isNotEmpty) ...[
-                    const SizedBox(width: 4),
+                  if (unit.isNotEmpty)
                     Text(
                       unit,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: AppTheme.textMuted,
+                        color: c.inkSecondary,
                       ),
                     ),
-                  ],
                 ],
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              subtext,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 11,
-                color: AppTheme.textMuted,
+              const SizedBox(height: 4),
+              Text(
+                subtext,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: c.inkSecondary,
+                  fontFeatures: AppTheme.tabularNumbers,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

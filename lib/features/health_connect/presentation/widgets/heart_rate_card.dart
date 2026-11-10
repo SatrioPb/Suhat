@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/date_formatter.dart';
+import '../../../../core/widgets/editorial_ui.dart';
 import '../../domain/models/health_models.dart';
 
 class HeartRateCard extends StatelessWidget {
@@ -15,6 +16,7 @@ class HeartRateCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.suhatColors;
     int? minBpm;
     int? maxBpm;
     int? avgBpm;
@@ -26,258 +28,151 @@ class HeartRateCard extends StatelessWidget {
       avgBpm = (bpms.reduce((a, b) => a + b) / bpms.length).round();
     }
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Divider(height: 1, thickness: 1, color: c.hairline),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppTheme.accentRed.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.favorite,
-                    color: AppTheme.accentRed,
-                    size: 24,
+                Text(
+                  'Detak Jantung (Heart Rate)',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    color: c.inkPrimary,
                   ),
                 ),
-                const SizedBox(width: 12),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Detak Jantung (Heart Rate)',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.textDark,
-                        ),
-                      ),
-                      Text(
-                        'Pengukuran denyut nadi',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppTheme.textMuted,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppTheme.surfaceLight,
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: AppTheme.borderSubtle),
-                  ),
-                  child: const Text(
-                    'Health Connect',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.textMuted,
-                    ),
+                Text(
+                  '${history.length} data',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: c.inkSecondary,
+                    fontFeatures: AppTheme.tabularNumbers,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            if (latestRecord == null)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceLight,
-                  borderRadius: BorderRadius.circular(12),
+          ),
+          const SizedBox(height: 10),
+          if (latestRecord == null)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: c.surfaceSubtle,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                'Belum ada rekaman detak jantung dalam 24 jam terakhir di Health Connect. Pastikan sensor denyut jam Supercalla MG5 menyala dan sinkronkan FitBeing.',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: c.inkSecondary,
+                  height: 1.4,
                 ),
-                child: const Text(
-                  'Belum ada data detak jantung yang dicatat di Health Connect dalam 24 jam terakhir.',
+              ),
+            )
+          else ...[
+            Wrap(
+              crossAxisAlignment: WrapCrossAlignment.end,
+              spacing: 6,
+              children: [
+                Text(
+                  '${latestRecord!.bpm}',
+                  style: TextStyle(
+                    fontSize: 34,
+                    fontWeight: FontWeight.w900,
+                    color: c.statusAlert,
+                    letterSpacing: -0.8,
+                    fontFeatures: AppTheme.tabularNumbers,
+                  ),
+                ),
+                Text(
+                  'BPM terkini',
                   style: TextStyle(
                     fontSize: 13,
-                    color: AppTheme.textMuted,
-                  ),
-                ),
-              )
-            else ...[
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.baseline,
-                textBaseline: TextBaseline.alphabetic,
-                children: [
-                  Text(
-                    '${latestRecord!.bpm}',
-                    style: const TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.w800,
-                      color: AppTheme.textDark,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'BPM',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: AppTheme.textMuted,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  const Icon(
-                    Icons.access_time,
-                    size: 14,
-                    color: AppTheme.textMuted,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Waktu pengukuran: ${DateFormatter.formatDateTime(latestRecord!.timestamp)} WIB',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppTheme.textMuted,
-                    ),
-                  ),
-                ],
-              ),
-              Text(
-                'Sumber: ${latestRecord!.source}',
-                style: const TextStyle(
-                  fontSize: 11,
-                  color: AppTheme.textMuted,
-                ),
-              ),
-              if (history.length > 1) ...[
-                const SizedBox(height: 14),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: AppTheme.surfaceLight,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildStatColumn('Min', '$minBpm BPM'),
-                      _buildStatDivider(),
-                      _buildStatColumn('Rata-rata', '$avgBpm BPM'),
-                      _buildStatDivider(),
-                      _buildStatColumn('Maks', '$maxBpm BPM'),
-                    ],
+                    fontWeight: FontWeight.w600,
+                    color: c.inkSecondary,
                   ),
                 ),
               ],
-              if (history.isNotEmpty) ...[
-                const Divider(height: 24, color: AppTheme.borderSubtle),
-                Row(
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Diukur ${DateFormatter.formatDateTime(latestRecord!.timestamp)} WIB • ${latestRecord!.source}',
+              style: TextStyle(
+                fontSize: 11,
+                color: c.inkSecondary,
+                fontFeatures: AppTheme.tabularNumbers,
+              ),
+            ),
+            if (history.length > 1) ...[
+              const SizedBox(height: 14),
+              EditorialMetricStrip(
+                items: [
+                  EditorialMetricItem(label: 'Min', value: '$minBpm', unit: 'BPM'),
+                  EditorialMetricItem(
+                      label: 'Rata-rata', value: '$avgBpm', unit: 'BPM'),
+                  EditorialMetricItem(label: 'Maks', value: '$maxBpm', unit: 'BPM'),
+                ],
+              ),
+            ],
+            const SizedBox(height: 12),
+            for (int i = 0; i < (history.length > 4 ? 4 : history.length); i++) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Riwayat Pengukuran Terakhir',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.textDark,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            DateFormatter.formatDateTime(history[i].timestamp),
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: c.inkPrimary,
+                              fontFeatures: AppTheme.tabularNumbers,
+                            ),
+                          ),
+                          Text(
+                            history[i].source,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: c.inkSecondary,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     Text(
-                      '${history.length} data',
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: AppTheme.textMuted,
+                      '${history[i].bpm} BPM',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        color: c.statusAlert,
+                        fontFeatures: AppTheme.tabularNumbers,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: history.length > 4 ? 4 : history.length,
-                  separatorBuilder: (context, index) =>
-                      const Divider(height: 12, color: AppTheme.borderSubtle),
-                  itemBuilder: (context, index) {
-                    final item = history[index];
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              DateFormatter.formatDateTime(item.timestamp),
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: AppTheme.textDark,
-                              ),
-                            ),
-                            Text(
-                              'Sumber: ${item.source}',
-                              style: const TextStyle(
-                                fontSize: 10,
-                                color: AppTheme.textMuted,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Text(
-                          '${item.bpm} BPM',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.accentRed,
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ],
+              ),
+              if (i < (history.length > 4 ? 4 : history.length) - 1)
+                Divider(height: 1, thickness: 1, color: c.hairline),
             ],
           ],
-        ),
+        ],
       ),
-    );
-  }
-
-  Widget _buildStatColumn(String label, String value) {
-    return Column(
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 11,
-            color: AppTheme.textMuted,
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.bold,
-            color: AppTheme.textDark,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatDivider() {
-    return Container(
-      width: 1,
-      height: 24,
-      color: AppTheme.borderSubtle,
     );
   }
 }

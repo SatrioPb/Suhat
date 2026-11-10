@@ -1,21 +1,50 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:suhat/app/providers.dart';
+import 'package:suhat/core/constants/app_constants.dart';
+import 'package:suhat/data/local/preferences_service.dart';
 import 'package:suhat/features/analytics/presentation/controllers/analytics_controller.dart';
 import 'package:suhat/features/health_connect/presentation/controllers/health_controller.dart';
 import 'package:suhat/features/running_coach/domain/models/running_plan.dart';
 import 'package:suhat/features/running_coach/domain/services/running_coach_service.dart';
 
-/// Provider singleton untuk RunningCoachService
 final runningCoachServiceProvider = Provider<RunningCoachService>((ref) {
   return RunningCoachService();
 });
 
-/// Target frekuensi lari per minggu (default: 4x seminggu, rentang ideal pelari 3-4x)
-final runningWeeklyTargetRunsProvider = StateProvider<int>((ref) => 4);
+class WeeklyTargetRunsNotifier extends StateNotifier<int> {
+  final PreferencesService _prefs;
+  WeeklyTargetRunsNotifier(this._prefs)
+      : super(_prefs.getWeeklyRunTarget());
 
-/// Estimasi usia pelari untuk kalkulasi Max Heart Rate & zona denyut (default: 30 tahun)
-final runnerAgeProvider = StateProvider<int>((ref) => 30);
+  Future<void> setTarget(int runs) async {
+    final clamped = runs.clamp(1, 7);
+    state = clamped;
+    await _prefs.setWeeklyRunTarget(clamped);
+  }
+}
 
-/// Provider yang otomatis menghasilkan rekomendasi latihan lari dan analitika lari mingguan
+final runningWeeklyTargetRunsProvider =
+    StateNotifierProvider<WeeklyTargetRunsNotifier, int>((ref) {
+  final prefs = ref.watch(preferencesServiceProvider);
+  return WeeklyTargetRunsNotifier(prefs);
+});
+
+class RunnerAgeNotifier extends StateNotifier<int> {
+  final PreferencesService _prefs;
+  RunnerAgeNotifier(this._prefs) : super(_prefs.getRunnerAge());
+
+  Future<void> setAge(int age) async {
+    final clamped = age.clamp(14, 90);
+    state = clamped;
+    await _prefs.setRunnerAge(clamped);
+  }
+}
+
+final runnerAgeProvider = StateNotifierProvider<RunnerAgeNotifier, int>((ref) {
+  final prefs = ref.watch(preferencesServiceProvider);
+  return RunnerAgeNotifier(prefs);
+});
+
 final runningCoachStateProvider = Provider<RunningCoachState>((ref) {
   final coachService = ref.watch(runningCoachServiceProvider);
   final healthState = ref.watch(healthControllerProvider);
@@ -31,7 +60,7 @@ final runningCoachStateProvider = Provider<RunningCoachState>((ref) {
           : 60);
 
   final zones = coachService.calculateRunningZones(
-    runnerAge,
+    runnerAge > 0 ? runnerAge : AppConstants.defaultRunnerAge,
     restingHeartRate: rhr,
   );
   final weeklySummary = coachService.calculateWeeklySummary(

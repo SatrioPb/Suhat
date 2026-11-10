@@ -24,6 +24,7 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.suhatColors;
     final pages = [
       DashboardPage(onNavigateTab: _navigateToTab),
       const AnalyticsPage(),
@@ -37,39 +38,43 @@ class _MainScreenState extends State<MainScreen> {
         index: _currentIndex,
         children: pages,
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: _navigateToTab,
-        backgroundColor: Colors.white,
-        indicatorColor: AppTheme.primaryTeal.withOpacity(0.15),
-        elevation: 2,
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.dashboard_outlined),
-            selectedIcon: Icon(Icons.dashboard, color: AppTheme.primaryTeal),
-            label: 'Dashboard',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.insights_outlined),
-            selectedIcon: Icon(Icons.insights, color: AppTheme.primaryTeal),
-            label: 'Analisis',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.directions_run_outlined),
-            selectedIcon: Icon(Icons.directions_run, color: AppTheme.primaryTeal),
-            label: 'Pelatih Lari',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.history_outlined),
-            selectedIcon: Icon(Icons.history, color: AppTheme.primaryTeal),
-            label: 'Riwayat',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.watch_outlined),
-            selectedIcon: Icon(Icons.watch, color: AppTheme.primaryTeal),
-            label: 'Perangkat',
-          ),
-        ],
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          border: Border(top: BorderSide(color: c.hairline, width: 1)),
+        ),
+        child: NavigationBar(
+          selectedIndex: _currentIndex,
+          onDestinationSelected: _navigateToTab,
+          backgroundColor: c.surfaceElevated,
+          elevation: 0,
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.dashboard_outlined),
+              selectedIcon: Icon(Icons.dashboard),
+              label: 'Dashboard',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.insights_outlined),
+              selectedIcon: Icon(Icons.insights),
+              label: 'Analisis',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.directions_run_outlined),
+              selectedIcon: Icon(Icons.directions_run),
+              label: 'Pelatih Lari',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.history_outlined),
+              selectedIcon: Icon(Icons.history),
+              label: 'Riwayat',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.watch_outlined),
+              selectedIcon: Icon(Icons.watch),
+              label: 'Perangkat',
+            ),
+          ],
+        ),
       ),
     );
   }

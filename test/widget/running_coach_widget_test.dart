@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:suhat/app/main_screen.dart';
 import 'package:suhat/app/providers.dart';
+import 'package:suhat/core/theme/app_theme.dart';
 import 'package:suhat/features/health_connect/domain/models/health_models.dart';
 import 'package:suhat/features/health_connect/domain/repositories/health_repository.dart';
 import 'package:suhat/features/health_connect/presentation/controllers/health_controller.dart';
@@ -186,8 +187,9 @@ void main() {
           healthConnectRepositoryProvider.overrideWithValue(mockRepo),
           weatherAqiControllerProvider.overrideWith((ref) => FakeWeatherAqiController()),
         ],
-        child: const MaterialApp(
-          home: Scaffold(
+        child: MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: const Scaffold(
             body: RunningCoachPage(),
           ),
         ),
@@ -196,8 +198,15 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('Pelatih Lari Cerdas'), findsOneWidget);
+    expect(find.text('Pelatih Lari'), findsOneWidget);
     expect(find.text('Rekomendasi Lari Hari Ini'), findsOneWidget);
+
+    await tester.scrollUntilVisible(
+      find.text('Cuaca & Kualitas Udara'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
     expect(find.text('Cuaca & Kualitas Udara'), findsOneWidget);
 
     // Scroll to reveal remaining cards in outer ListView
@@ -210,6 +219,11 @@ void main() {
 
     expect(find.text('Target Lari Mingguan'), findsOneWidget);
 
+    // Interactive check: change weekly target from 4x to 3x
+    await tester.tap(find.text('3x / minggu'));
+    await tester.pumpAndSettle();
+    expect(find.text('Target 3 sesi per minggu'), findsOneWidget);
+
     await tester.scrollUntilVisible(
       find.text('5 Zona Detak Jantung Lari'),
       300,
@@ -218,6 +232,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('5 Zona Detak Jantung Lari'), findsOneWidget);
+
+    // Interactive check: adjust runner age +1 updates MHR (190 -> 189)
+    await tester.tap(find.byTooltip('Tambah usia'));
+    await tester.pumpAndSettle();
+    expect(find.text('Usia Pelari: 31 tahun'), findsOneWidget);
 
     await tester.scrollUntilVisible(
       find.text('Pencegahan Cedera & Overtraining'),
@@ -242,8 +261,9 @@ void main() {
           healthConnectRepositoryProvider.overrideWithValue(mockRepo),
           weatherAqiControllerProvider.overrideWith((ref) => FakeWeatherAqiController()),
         ],
-        child: const MaterialApp(
-          home: MainScreen(),
+        child: MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: const MainScreen(),
         ),
       ),
     );

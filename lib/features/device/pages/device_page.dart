@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../app/providers.dart';
+import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/theme/theme_controller.dart';
 import '../../health_connect/presentation/controllers/health_controller.dart';
 import '../../health_connect/presentation/widgets/health_status_card.dart';
 
@@ -10,204 +11,170 @@ class DevicePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final c = context.suhatColors;
     final healthState = ref.watch(healthControllerProvider);
     final controller = ref.read(healthControllerProvider.notifier);
-    final prefsService = ref.watch(preferencesServiceProvider);
-
-    final currentGoal = prefsService.getDailyStepGoal();
+    final currentGoal = ref.watch(dailyStepGoalProvider);
+    final themeMode = ref.watch(themeModeProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Column(
+        toolbarHeight: 64,
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               'Perangkat & Pengaturan',
               style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.textDark,
+                fontSize: 19,
+                fontWeight: FontWeight.w800,
+                color: c.inkPrimary,
+                letterSpacing: -0.4,
               ),
             ),
             Text(
-              'Integrasi Sumber Data & Preferensi',
+              'Integrasi Health Connect, tampilan, dan target',
               style: TextStyle(
                 fontSize: 11,
-                color: AppTheme.textMuted,
+                color: c.inkSecondary,
                 fontWeight: FontWeight.normal,
               ),
             ),
           ],
         ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.only(top: 8, bottom: 32),
-        children: [
-          // 1. Status Health Connect & Izin
-          HealthStatusCard(
-            state: healthState,
-            onRequestPermissions: () => controller.requestPermissions(),
-            onInstallHealthConnect: () =>
-                controller.openStoreForHealthConnect(),
-            onRefresh: () => controller.fetchHealthData(),
-          ),
+      body: SafeArea(
+        top: false,
+        child: ListView(
+          padding: const EdgeInsets.only(top: 8, bottom: 36),
+          children: [
+            // 1. Focal Sheet: Status Health Connect & Izin
+            HealthStatusCard(
+              state: healthState,
+              onRequestPermissions: () => controller.requestPermissions(),
+              onInstallHealthConnect: () =>
+                  controller.openStoreForHealthConnect(),
+              onRefresh: () => controller.fetchHealthData(),
+            ),
 
-          // 2. Petunjuk Sinkronisasi Smartwatch Supercalla MG5 via Fitbeing
-          _buildFitbeingGuideCard(),
+            const SizedBox(height: 16),
 
-          // 3. Pengaturan Target Langkah Harian
-          _buildStepGoalCard(context, ref, currentGoal),
+            // 2. Recessed Block: Pengaturan Tampilan (Terang/Gelap) & Target Langkah
+            _buildPreferencesBlock(context, ref, themeMode, currentGoal, c),
 
-          // 4. Informasi Sumber Data Health Connect
-          _buildHealthConnectNoticeCard(),
+            const SizedBox(height: 20),
 
-          // 5. Tentang Aplikasi & Privasi
-          _buildAboutCard(),
-        ],
+            // 3. Open Hairline List: Panduan Smartwatch Supercalla
+            _buildFitbeingGuideSection(c),
+
+            const SizedBox(height: 16),
+
+            // 4. Open Footer: Sumber Data & Privasi
+            _buildFooterNotice(c),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildFitbeingGuideCard() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.borderSubtle),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryTeal.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.watch,
-                  color: AppTheme.primaryTeal,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 10),
-              const Text(
-                'Panduan Smartwatch Supercalla',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textDark,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'Untuk menampilkan data kesehatan jam Supercalla di aplikasi ini:',
-            style: TextStyle(fontSize: 12, color: AppTheme.textDark),
-          ),
-          const SizedBox(height: 8),
-          _buildStepItem('1', 'Buka aplikasi Fitbeing pada ponsel Anda.'),
-          _buildStepItem('2', 'Pastikan smartwatch Supercalla terhubung via Bluetooth di Fitbeing.'),
-          _buildStepItem('3', 'Masuk ke Pengaturan Fitbeing > Aktifkan integrasi Google Health Connect.'),
-          _buildStepItem('4', 'Kembali ke aplikasi Supercalla Health dan tekan tombol sinkronisasi.'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStepItem(String number, String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 18,
-            height: 18,
-            decoration: const BoxDecoration(
-              color: AppTheme.surfaceLight,
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                number,
-                style: const TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.primaryTeal,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(
-                fontSize: 11,
-                color: AppTheme.textMuted,
-                height: 1.3,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStepGoalCard(BuildContext context, WidgetRef ref, int currentGoal) {
+  Widget _buildPreferencesBlock(
+    BuildContext context,
+    WidgetRef ref,
+    ThemeMode themeMode,
+    int currentGoal,
+    SuhatColors c,
+  ) {
     final goals = [6000, 8000, 10000, 12000, 15000];
+    final fmt = NumberFormat('#,###', 'id_ID');
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.borderSubtle),
+        color: c.surfaceSubtle,
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Target Langkah Harian',
+          Text(
+            'Mode Tampilan',
             style: TextStyle(
               fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.textDark,
+              fontWeight: FontWeight.w800,
+              color: c.inkPrimary,
             ),
           ),
           const SizedBox(height: 4),
           Text(
-            'Target saat ini: $currentGoal langkah per hari',
-            style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+            'Pilih tema yang nyaman untuk pagi hari atau luar ruangan',
+            style: TextStyle(fontSize: 12, color: c.inkSecondary),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           Wrap(
             spacing: 8,
+            runSpacing: 8,
+            children: [
+              _buildChoiceButton(
+                c: c,
+                label: 'Terang',
+                selected: themeMode == ThemeMode.light,
+                onTap: () => ref
+                    .read(themeModeProvider.notifier)
+                    .setThemeMode(ThemeMode.light),
+              ),
+              _buildChoiceButton(
+                c: c,
+                label: 'Gelap',
+                selected: themeMode == ThemeMode.dark,
+                onTap: () => ref
+                    .read(themeModeProvider.notifier)
+                    .setThemeMode(ThemeMode.dark),
+              ),
+              _buildChoiceButton(
+                c: c,
+                label: 'Sistem',
+                selected: themeMode == ThemeMode.system,
+                onTap: () => ref
+                    .read(themeModeProvider.notifier)
+                    .setThemeMode(ThemeMode.system),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+          Divider(height: 1, thickness: 1, color: c.hairline),
+          const SizedBox(height: 14),
+
+          Text(
+            'Target Langkah Harian',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+              color: c.inkPrimary,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Target aktif: ${fmt.format(currentGoal)} langkah per hari',
+            style: TextStyle(
+              fontSize: 12,
+              color: c.inkSecondary,
+              fontFeatures: AppTheme.tabularNumbers,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
             children: goals.map((g) {
-              final isSelected = g == currentGoal;
-              return ChoiceChip(
-                label: Text('$g'),
-                selected: isSelected,
-                selectedColor: AppTheme.primaryTeal.withOpacity(0.2),
-                labelStyle: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: isSelected ? AppTheme.primaryTeal : AppTheme.textDark,
-                ),
-                onSelected: (selected) async {
-                  if (selected) {
-                    final prefs = ref.read(preferencesServiceProvider);
-                    await prefs.setDailyStepGoal(g);
-                    // Refresh data
-                    ref.read(healthControllerProvider.notifier).fetchHealthData();
-                  }
+              return _buildChoiceButton(
+                c: c,
+                label: fmt.format(g),
+                selected: g == currentGoal,
+                onTap: () async {
+                  await ref.read(dailyStepGoalProvider.notifier).setGoal(g);
+                  ref.read(healthControllerProvider.notifier).fetchHealthData();
                 },
               );
             }).toList(),
@@ -217,48 +184,96 @@ class DevicePage extends ConsumerWidget {
     );
   }
 
-
-  Widget _buildHealthConnectNoticeCard() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.borderSubtle),
+  Widget _buildChoiceButton({
+    required SuhatColors c,
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return ChoiceChip(
+      label: Text(label),
+      selected: selected,
+      showCheckmark: false,
+      selectedColor: c.accentPine,
+      backgroundColor: c.surfaceElevated,
+      side: BorderSide(
+        color: selected ? c.accentPine : c.controlBorder,
+        width: 1,
       ),
-      child: const Row(
+      labelStyle: TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w700,
+        color: selected ? c.onAccentPine : c.inkPrimary,
+        fontFeatures: AppTheme.tabularNumbers,
+      ),
+      materialTapTargetSize: MaterialTapTargetSize.padded,
+      onSelected: (isSel) {
+        if (isSel || selected) onTap();
+      },
+    );
+  }
+
+  Widget _buildFitbeingGuideSection(SuhatColors c) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.health_and_safety_outlined,
-            size: 20,
-            color: AppTheme.primaryTeal,
+          Divider(height: 1, thickness: 1, color: c.hairline),
+          const SizedBox(height: 16),
+          Text(
+            'Panduan Smartwatch Supercalla',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+              color: c.inkPrimary,
+            ),
           ),
-          SizedBox(width: 10),
+          const SizedBox(height: 4),
+          Text(
+            'Alur sinkronisasi jam Supercalla MG5 ke aplikasi Suhat:',
+            style: TextStyle(fontSize: 12, color: c.inkSecondary),
+          ),
+          const SizedBox(height: 10),
+          _buildGuideRow('01', 'Buka aplikasi FitBeing pada ponsel Anda.', c),
+          Divider(height: 1, thickness: 1, color: c.hairline),
+          _buildGuideRow(
+              '02', 'Pastikan smartwatch Supercalla MG5 terhubung di FitBeing.', c),
+          Divider(height: 1, thickness: 1, color: c.hairline),
+          _buildGuideRow('03',
+              'Buka Pengaturan FitBeing lalu aktifkan integrasi Google Health Connect.', c),
+          Divider(height: 1, thickness: 1, color: c.hairline),
+          _buildGuideRow(
+              '04', 'Kembali ke Suhat dan tekan tombol sinkronisasi pada Dashboard.', c),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGuideRow(String numStr, String text, SuhatColors c) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            numStr,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              color: c.accentPine,
+              fontFeatures: AppTheme.tabularNumbers,
+            ),
+          ),
+          const SizedBox(width: 12),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Sumber Data: Google Health Connect',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.textDark,
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  'Aplikasi Suhat menggunakan Google Health Connect sebagai pusat pertukaran data kesehatan terpadu. '
-                  'Semua metrik dari smartwatch (Supercalla MG5 melalui aplikasi Fitbeing) disinkronkan secara aman dan otomatis melalui Health Connect.',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: AppTheme.textMuted,
-                    height: 1.35,
-                  ),
-                ),
-              ],
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 12,
+                color: c.inkPrimary,
+                height: 1.4,
+              ),
             ),
           ),
         ],
@@ -266,34 +281,38 @@ class DevicePage extends ConsumerWidget {
     );
   }
 
-  Widget _buildAboutCard() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.borderSubtle),
-      ),
-      child: const Column(
+  Widget _buildFooterNotice(SuhatColors c) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Divider(height: 1, thickness: 1, color: c.hairline),
+          const SizedBox(height: 16),
           Text(
-            'Tentang Aplikasi',
+            'Sumber Data: Google Health Connect',
             style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.textDark,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: c.inkPrimary,
             ),
           ),
-          SizedBox(height: 6),
+          const SizedBox(height: 4),
           Text(
-            'Supercalla Health (Suhat)\nVersi 1.0.0 (MVP Health Connect)\n'
-            'Privasi Anda terjamin. Semua data kesehatan disimpan secara lokal dan diproses pada perangkat Anda.',
+            'Suhat menggunakan Google Health Connect sebagai pusat pertukaran data terpadu untuk metrik dari Supercalla MG5 (melalui FitBeing). Seluruh data kesehatan diproses langsung di perangkat Anda.',
+            style: TextStyle(
+              fontSize: 12,
+              color: c.inkSecondary,
+              height: 1.45,
+            ),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            'Supercalla Health (Suhat) • Versi 1.0.0',
             style: TextStyle(
               fontSize: 11,
-              color: AppTheme.textMuted,
-              height: 1.4,
+              fontWeight: FontWeight.w600,
+              color: c.inkSecondary,
             ),
           ),
         ],

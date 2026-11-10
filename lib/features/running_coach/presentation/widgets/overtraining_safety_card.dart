@@ -6,117 +6,97 @@ class OvertrainingSafetyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppTheme.accentAmber.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.security,
-                    color: AppTheme.accentAmber,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Pencegahan Cedera & Overtraining',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.textDark,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Text(
-                        'Tips keselamatan pelari berkelanjutan',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppTheme.textMuted,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 14),
+    final c = context.suhatColors;
 
-            _buildTipItem(
-              Icons.trending_up,
-              'Aturan Kenaikan 10% (10% Rule)',
-              'Jangan menaikkan total jarak lari mingguan lebih dari 10% dibanding minggu sebelumnya. Kenaikan drastis adalah penyebab nomor satu cedera tulang kering (shin splints) dan tendon achilles.',
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Divider(height: 1, thickness: 1, color: c.hairline),
+          const SizedBox(height: 16),
+          Text(
+            'Pencegahan Cedera & Overtraining',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+              color: c.inkPrimary,
             ),
-            const SizedBox(height: 10),
-            _buildTipItem(
-              Icons.favorite_outline,
-              'Dengarkan Detak Jantung Istirahat (RHR)',
-              'Jika detak jantung istirahat pagi Anda meningkat 5-7 BPM di atas rata-rata normal, ini tanda jelas sistem saraf simpatik belum pulih. Jadikan hari tersebut sebagai Rest Day.',
+          ),
+          const SizedBox(height: 2),
+          Text(
+            'Prinsip keselamatan lari berkelanjutan',
+            style: TextStyle(
+              fontSize: 12,
+              color: c.inkSecondary,
             ),
-            const SizedBox(height: 10),
-            _buildTipItem(
-              Icons.bedtime_outlined,
-              'Tidur adalah Obat Pemulihan Terbaik',
-              'Otot kaki tidak berkembang saat Anda berlari, melainkan saat Anda tidur nyenyak (fase Deep Sleep). Pastikan tidur 7-8 jam per malam untuk sintesis jaringan otot.',
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 12),
+          _buildPrincipleRow(
+            c,
+            '01',
+            'Aturan Kenaikan 10% (10% Rule)',
+            'Jangan menaikkan total jarak lari mingguan lebih dari 10% dibanding minggu sebelumnya agar tulang kering dan tendon achilles beradaptasi.',
+          ),
+          Divider(height: 1, thickness: 1, color: c.hairline),
+          _buildPrincipleRow(
+            c,
+            '02',
+            'Pantau Detak Jantung Istirahat (RHR)',
+            'Jika detak jantung istirahat pagi naik 5-7 BPM di atas rata-rata normal, sistem saraf belum pulih sepenuhnya dan tubuh perlu istirahat.',
+          ),
+          Divider(height: 1, thickness: 1, color: c.hairline),
+          _buildPrincipleRow(
+            c,
+            '03',
+            'Prioritaskan Tidur untuk Regenerasi',
+            'Perbaikan jaringan otot terjadi saat tidur nyenyak (fase Deep Sleep). Upayakan tidur 7-8 jam setiap malam setelah sesi latihan.',
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildTipItem(IconData icon, String title, String body) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceLight,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppTheme.borderSubtle),
-      ),
+  Widget _buildPrincipleRow(
+    SuhatColors c,
+    String indexLabel,
+    String title,
+    String body,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            icon,
-            size: 16,
-            color: AppTheme.primaryTeal,
+          Text(
+            indexLabel,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              color: c.accentPine,
+              fontFeatures: AppTheme.tabularNumbers,
+            ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.textDark,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: c.inkPrimary,
                   ),
                 ),
                 const SizedBox(height: 3),
                 Text(
                   body,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: AppTheme.textMuted,
-                    height: 1.35,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: c.inkSecondary,
+                    height: 1.4,
                   ),
                 ),
               ],

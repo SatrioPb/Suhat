@@ -45,22 +45,22 @@ enum RunningWorkoutType {
     }
   }
 
-  Color get color {
+  Color resolveColor(SuhatColors colors) {
     switch (this) {
       case RunningWorkoutType.restDay:
-        return AppTheme.accentIndigo;
+        return colors.inkSecondary;
       case RunningWorkoutType.recoveryRun:
-        return AppTheme.primaryTeal;
       case RunningWorkoutType.easyRun:
-        return AppTheme.accentGreen;
+        return colors.accentPine;
       case RunningWorkoutType.tempoRun:
-        return AppTheme.accentAmber;
-      case RunningWorkoutType.intervalRun:
-        return AppTheme.accentRed;
       case RunningWorkoutType.longRun:
-        return Colors.deepOrange;
+        return colors.statusCaution;
+      case RunningWorkoutType.intervalRun:
+        return colors.statusAlert;
     }
   }
+
+  Color get color => resolveColor(SuhatColors.light);
 
   IconData get icon {
     switch (this) {

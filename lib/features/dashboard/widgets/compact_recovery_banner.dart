@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/editorial_ui.dart';
 import '../../analytics/domain/models/health_insight.dart';
 
 class CompactRecoveryBanner extends StatelessWidget {
@@ -14,125 +15,136 @@ class CompactRecoveryBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = _getLevelColor(insight.level);
+    final c = context.suhatColors;
+    final color = EditorialStatusColors.recovery(insight.level, c);
+    final textScale = MediaQuery.textScalerOf(context).scale(1.0);
 
-    return InkWell(
-      onTap: onTapViewAnalysis,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.borderSubtle),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.02),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+    final scoreBlock = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '${insight.recoveryScore}',
+          style: TextStyle(
+            fontSize: 32,
+            fontWeight: FontWeight.w900,
+            color: color,
+            height: 1.0,
+            letterSpacing: -1,
+            fontFeatures: AppTheme.tabularNumbers,
+          ),
         ),
-        child: Row(
-          children: [
-            // Circular Score
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: color.withOpacity(0.1),
-                border: Border.all(color: color.withOpacity(0.3), width: 2),
-              ),
-              child: Center(
-                child: Text(
-                  '${insight.recoveryScore}',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w900,
-                    color: color,
-                  ),
+        const SizedBox(height: 2),
+        Text(
+          'skor / 100',
+          style: TextStyle(
+            fontSize: 11,
+            color: c.inkSecondary,
+            fontFeatures: AppTheme.tabularNumbers,
+          ),
+        ),
+      ],
+    );
+
+    final detailBlock = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: double.infinity,
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            alignment: WrapAlignment.spaceBetween,
+            children: [
+              Text(
+                'Kesiapan Fisik',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: c.inkPrimary,
                 ),
               ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+              EditorialStatusTag(
+                label: insight.level.label,
+                color: color,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 5),
+        Text(
+          insight.actionableAdvice.isNotEmpty
+              ? insight.actionableAdvice.first
+              : insight.headline,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: 12,
+            color: c.inkSecondary,
+            height: 1.35,
+          ),
+        ),
+      ],
+    );
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(color: c.hairline, width: 1),
+            bottom: BorderSide(color: c.hairline, width: 1),
+          ),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTapViewAnalysis,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  if (constraints.maxWidth < 300 || textScale > 1.45) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(child: scoreBlock),
+                            Icon(
+                              Icons.chevron_right,
+                              color: c.inkSecondary,
+                              size: 20,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        detailBlock,
+                      ],
+                    );
+                  }
+
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: color.withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          insight.level.label,
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: color,
-                          ),
-                        ),
-                      ),
-                      const Expanded(
-                        child: Text(
-                          'Kesiapan Fisik',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.textDark,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                      scoreBlock,
+                      const SizedBox(width: 18),
+                      Expanded(child: detailBlock),
+                      const SizedBox(width: 8),
+                      Icon(
+                        Icons.chevron_right,
+                        color: c.inkSecondary,
+                        size: 20,
                       ),
                     ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    insight.actionableAdvice.isNotEmpty
-                        ? insight.actionableAdvice.first
-                        : insight.headline,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppTheme.textMuted,
-                      height: 1.3,
-                    ),
-                  ),
-                ],
+                  );
+                },
               ),
             ),
-            const SizedBox(width: 8),
-            const Icon(
-              Icons.chevron_right,
-              color: AppTheme.textMuted,
-              size: 20,
-            ),
-          ],
+          ),
         ),
       ),
     );
-  }
-
-  Color _getLevelColor(RecoveryLevel level) {
-    switch (level) {
-      case RecoveryLevel.optimal:
-        return AppTheme.accentGreen;
-      case RecoveryLevel.good:
-        return AppTheme.primaryTeal;
-      case RecoveryLevel.attentionNeeded:
-        return AppTheme.accentAmber;
-      case RecoveryLevel.restRequired:
-        return AppTheme.accentRed;
-      case RecoveryLevel.insufficientData:
-        return AppTheme.textMuted;
-    }
   }
 }

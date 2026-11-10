@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:suhat/app/providers.dart';
+import 'package:suhat/core/theme/app_theme.dart';
 import 'package:suhat/features/dashboard/widgets/compact_running_banner.dart';
 import 'package:suhat/features/running_coach/domain/models/running_plan.dart';
-import 'package:suhat/features/running_coach/presentation/widgets/running_zones_card.dart';
 import 'package:suhat/features/weather_aqi/domain/models/weather_aqi_models.dart';
 import 'package:suhat/features/weather_aqi/presentation/controllers/weather_aqi_controller.dart';
 import 'package:suhat/features/weather_aqi/presentation/widgets/city_picker_bottom_sheet.dart';
@@ -55,8 +55,9 @@ void main() {
             ),
           ),
         ],
-        child: const MaterialApp(
-          home: Scaffold(
+        child: MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: const Scaffold(
             body: SingleChildScrollView(
               child: OutdoorWeatherAqiCard(),
             ),
@@ -160,6 +161,7 @@ void main() {
           ),
         ],
         child: MaterialApp(
+          theme: AppTheme.lightTheme,
           home: Scaffold(
             body: CompactRunningBanner(
               recommendation: recommendation,
@@ -177,14 +179,83 @@ void main() {
     expect(find.text('25°C'), findsOneWidget);
     expect(find.text('AQI 35'), findsOneWidget);
   });
+
+  testWidgets('OutdoorWeatherAqiCard renders explicit loading and error retry states',
+      (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+
+    // 1. Loading State
+    await tester.pumpWidget(
+      ProviderScope(
+        key: const ValueKey('loading-scope'),
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          weatherAqiControllerProvider.overrideWith(
+            (ref) => FakeWeatherAqiController(
+              const WeatherAqiState(
+                isLoading: true,
+                condition: null,
+                selectedLocation: PresetLocation.defaultLocation,
+              ),
+            ),
+          ),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: const Scaffold(
+            body: OutdoorWeatherAqiCard(),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('Mengambil data cuaca & AQI real-time...'), findsOneWidget);
+
+    // 2. Error State with Retry Action
+    final retryController = FakeWeatherAqiController(
+      const WeatherAqiState(
+        isLoading: false,
+        condition: null,
+        errorMessage: 'Koneksi gagal',
+        selectedLocation: PresetLocation.defaultLocation,
+      ),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        key: const ValueKey('error-scope'),
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          weatherAqiControllerProvider.overrideWith((ref) => retryController),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: const Scaffold(
+            body: OutdoorWeatherAqiCard(),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Koneksi gagal'), findsOneWidget);
+    expect(find.text('Coba Lagi'), findsOneWidget);
+    await tester.tap(find.text('Coba Lagi'));
+    expect(retryController.fetchCalled, isTrue);
+  });
 }
 
 class FakeWeatherAqiController extends StateNotifier<WeatherAqiState>
     implements WeatherAqiController {
+  bool fetchCalled = false;
   FakeWeatherAqiController(super.state);
 
   @override
-  Future<void> fetchCondition({PresetLocation? location, bool forceRefresh = false}) async {}
+  Future<void> fetchCondition({PresetLocation? location, bool forceRefresh = false}) async {
+    fetchCalled = true;
+  }
 
   @override
   Future<void> changeLocation(PresetLocation newLocation) async {}

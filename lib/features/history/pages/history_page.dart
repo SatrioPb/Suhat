@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/editorial_ui.dart';
 import '../../health_connect/presentation/controllers/health_controller.dart';
 import '../../health_connect/presentation/widgets/heart_rate_card.dart';
 import '../../health_connect/presentation/widgets/sleep_card.dart';
@@ -15,27 +16,32 @@ class HistoryPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final healthState = ref.watch(healthControllerProvider);
     final controller = ref.read(healthControllerProvider.notifier);
+    final c = context.suhatColors;
+    final hasNeverFetched = healthState.summary.lastFetched ==
+        DateTime.fromMillisecondsSinceEpoch(0);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Column(
+        toolbarHeight: 64,
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               'Riwayat Aktivitas & Vitalitas',
               style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.textDark,
+                fontSize: 19,
+                fontWeight: FontWeight.w800,
+                color: c.inkPrimary,
+                letterSpacing: -0.4,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
             Text(
-              'Log Pengukuran & Rekaman Riil Lengkap',
+              'Rekaman langkah, kalori, denyut jantung, dan tidur riil',
               style: TextStyle(
                 fontSize: 11,
-                color: AppTheme.textMuted,
+                color: c.inkSecondary,
                 fontWeight: FontWeight.normal,
               ),
               maxLines: 1,
@@ -45,48 +51,85 @@ class HistoryPage extends ConsumerWidget {
         ),
         actions: [
           IconButton(
-            tooltip: 'Sinkronkan data',
-            onPressed: healthState.isLoading ? null : () => controller.fetchHealthData(),
-            icon: const Icon(Icons.refresh, color: AppTheme.primaryTeal),
+            tooltip: 'Sinkronkan riwayat',
+            onPressed:
+                healthState.isLoading ? null : () => controller.fetchHealthData(),
+            icon: healthState.isLoading
+                ? SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: c.accentPine,
+                    ),
+                  )
+                : Icon(Icons.refresh, color: c.accentPine),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
         ],
       ),
-      body: RefreshIndicator(
-        color: AppTheme.primaryTeal,
-        onRefresh: () => controller.fetchHealthData(),
-        child: ListView(
-          padding: const EdgeInsets.only(top: 8, bottom: 32),
-          children: [
-            // 1. Log Langkah & Segmen
-            StepsCard(
-              totalSteps: healthState.summary.totalStepsToday,
-              stepRecords: healthState.summary.stepRecords,
-              lastFetched: healthState.summary.lastFetched,
-            ),
+      body: SafeArea(
+        top: false,
+        child: RefreshIndicator(
+          color: c.accentPine,
+          onRefresh: () => controller.fetchHealthData(),
+          child: ListView(
+            padding: const EdgeInsets.only(top: 8, bottom: 36),
+            children: [
+              if (healthState.isLoading && hasNeverFetched)
+                EditorialStateNotice(
+                  icon: Icons.sync,
+                  color: c.accentPine,
+                  title: 'Memuat riwayat...',
+                  message:
+                      'Mengambil log pengukuran terbaru dari Google Health Connect.',
+                  showProgress: true,
+                ),
 
-            // 2. Kalori Aktif, Total Kalori, Jarak, Elevasi & Sesi Olahraga
-            ActivityMetricsCard(
-              summary: healthState.summary,
-            ),
+              if (healthState.errorMessage != null)
+                EditorialStateNotice(
+                  icon: Icons.error_outline,
+                  color: c.statusAlert,
+                  title: 'Gagal memuat riwayat',
+                  message: healthState.errorMessage!,
+                  actionLabel: 'Coba Lagi',
+                  onAction: () => controller.fetchHealthData(),
+                ),
 
-            // 3. Log Detak Jantung Riil
-            HeartRateCard(
-              latestRecord: healthState.summary.latestHeartRate,
-              history: healthState.summary.heartRateHistory,
-            ),
+              // 1. Focal Sheet: Kalori, Jarak & Olahraga
+              ActivityMetricsCard(summary: healthState.summary),
 
-            // 4. Log Tanda Vital (RHR, HRV, SpO2) & Biometrik (Berat, Tinggi, BMI)
-            BiometricsHistoryCard(
-              summary: healthState.summary,
-            ),
+              const SizedBox(height: 18),
 
-            // 5. Log Sesi Tidur & Tahapan
-            SleepCard(
-              latestSleep: healthState.summary.latestSleep,
-              sleepHistory: healthState.summary.sleepHistory,
-            ),
-          ],
+              // 2. Open Ledger: Log Langkah
+              StepsCard(
+                totalSteps: healthState.summary.totalStepsToday,
+                stepRecords: healthState.summary.stepRecords,
+                lastFetched: healthState.summary.lastFetched,
+              ),
+
+              const SizedBox(height: 18),
+
+              // 3. Recessed Band: Tanda Vital & Komposisi Tubuh
+              BiometricsHistoryCard(summary: healthState.summary),
+
+              const SizedBox(height: 18),
+
+              // 4. Open Ledger: Log Detak Jantung Riil
+              HeartRateCard(
+                latestRecord: healthState.summary.latestHeartRate,
+                history: healthState.summary.heartRateHistory,
+              ),
+
+              const SizedBox(height: 18),
+
+              // 5. Recessed Band: Log Sesi Tidur & Tahapan
+              SleepCard(
+                latestSleep: healthState.summary.latestSleep,
+                sleepHistory: healthState.summary.sleepHistory,
+              ),
+            ],
+          ),
         ),
       ),
     );

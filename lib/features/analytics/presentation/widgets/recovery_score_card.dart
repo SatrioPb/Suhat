@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/editorial_ui.dart';
 import '../../domain/models/health_insight.dart';
 
 class RecoveryScoreCard extends StatelessWidget {
@@ -12,234 +13,168 @@ class RecoveryScoreCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = _getLevelColor(insight.level);
+    final c = context.suhatColors;
+    final statusColor = EditorialStatusColors.recovery(insight.level, c);
+    final scoreRatio = (insight.recoveryScore / 100).clamp(0.0, 1.0);
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: c.surfaceElevated,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: c.hairline, width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: double.infinity,
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    Icons.insights,
-                    color: color,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Kesiapan & Pemulihan Fisik',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.textDark,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Text(
-                        insight.heartRateAnalysis.hasData
-                            ? 'Analisis Detak Jantung & Tidur Riil'
-                            : 'Analisis Sesi Tidur (Menunggu Denyut Riil)',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppTheme.textMuted,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 105),
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: color.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: color.withOpacity(0.3)),
-                    ),
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        insight.level.shortLabel,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: color,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                // Score Circle
-                Stack(
-                  alignment: Alignment.center,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(
-                      width: 72,
-                      height: 72,
-                      child: CircularProgressIndicator(
-                        value: insight.recoveryScore / 100,
-                        strokeWidth: 7,
-                        backgroundColor: AppTheme.surfaceLight,
-                        valueColor: AlwaysStoppedAnimation<Color>(color),
+                    Text(
+                      'Kesiapan & Pemulihan Fisik',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: c.inkPrimary,
                       ),
                     ),
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          '${insight.recoveryScore}',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w900,
-                            color: color,
-                          ),
-                        ),
-                        const Text(
-                          '/ 100',
-                          style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.textMuted,
-                          ),
-                        ),
-                      ],
+                    const SizedBox(height: 2),
+                    Text(
+                      insight.heartRateAnalysis.hasData
+                          ? 'Berdasarkan denyut jantung dan tidur riil'
+                          : 'Berdasarkan sesi tidur (menunggu denyut riil)',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: c.inkSecondary,
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        insight.headline,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.textDark,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        insight.summary,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppTheme.textMuted,
-                          height: 1.35,
-                        ),
-                      ),
-                    ],
-                  ),
+                EditorialStatusTag(
+                  label: insight.level.shortLabel,
+                  color: statusColor,
                 ),
               ],
             ),
-            if (insight.actionableAdvice.isNotEmpty) ...[
-              const Divider(height: 24, color: AppTheme.borderSubtle),
-              const Text(
-                'Rekomendasi Tindakan:',
+          ),
+          const SizedBox(height: 18),
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.end,
+            spacing: 6,
+            children: [
+              Text(
+                '${insight.recoveryScore}',
                 style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textDark,
+                  fontSize: 42,
+                  fontWeight: FontWeight.w900,
+                  color: statusColor,
+                  height: 1.0,
+                  letterSpacing: -1.2,
+                  fontFeatures: AppTheme.tabularNumbers,
                 ),
               ),
-              const SizedBox(height: 8),
-              ...insight.actionableAdvice.map((advice) => Padding(
-                    padding: const EdgeInsets.only(bottom: 6),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Icon(
-                          Icons.check_circle,
-                          size: 16,
-                          color: AppTheme.primaryTeal,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            advice,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: AppTheme.textDark,
-                              height: 1.3,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )),
-            ],
-            const SizedBox(height: 10),
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: AppTheme.surfaceLight,
-                borderRadius: BorderRadius.circular(8),
+              Text(
+                '/ 100',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: c.inkSecondary,
+                  fontFeatures: AppTheme.tabularNumbers,
+                ),
               ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(
-                    Icons.info_outline,
-                    size: 14,
-                    color: AppTheme.textMuted,
-                  ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      insight.medicalDisclaimer,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        color: AppTheme.textMuted,
-                        height: 1.3,
-                      ),
-                    ),
-                  ),
-                ],
+            ],
+          ),
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(2),
+            child: LinearProgressIndicator(
+              value: scoreRatio,
+              minHeight: 5,
+              backgroundColor: c.surfaceSubtle,
+              valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+            ),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            insight.headline,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: c.inkPrimary,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            insight.summary,
+            style: TextStyle(
+              fontSize: 12,
+              color: c.inkSecondary,
+              height: 1.4,
+            ),
+          ),
+          if (insight.actionableAdvice.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Divider(height: 1, thickness: 1, color: c.hairline),
+            const SizedBox(height: 12),
+            Text(
+              'Langkah Disarankan',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: c.inkPrimary,
               ),
             ),
+            const SizedBox(height: 8),
+            for (int i = 0; i < insight.actionableAdvice.length; i++)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${i + 1}.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: c.accentPine,
+                        fontFeatures: AppTheme.tabularNumbers,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        insight.actionableAdvice[i],
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: c.inkPrimary,
+                          height: 1.35,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
           ],
-        ),
+          const SizedBox(height: 10),
+          Text(
+            insight.medicalDisclaimer,
+            style: TextStyle(
+              fontSize: 10.5,
+              color: c.inkSecondary,
+              height: 1.35,
+            ),
+          ),
+        ],
       ),
     );
-  }
-
-  Color _getLevelColor(RecoveryLevel level) {
-    switch (level) {
-      case RecoveryLevel.optimal:
-        return AppTheme.accentGreen;
-      case RecoveryLevel.good:
-        return AppTheme.primaryTeal;
-      case RecoveryLevel.attentionNeeded:
-        return AppTheme.accentAmber;
-      case RecoveryLevel.restRequired:
-        return AppTheme.accentRed;
-      case RecoveryLevel.insufficientData:
-        return AppTheme.textMuted;
-    }
   }
 }
